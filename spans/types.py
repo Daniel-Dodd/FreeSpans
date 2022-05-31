@@ -60,16 +60,16 @@ class SpanData(Dataset):
         return self.y.reshape(self.nt, self.nl)
 
     def drift(self, units: int) -> "SpanData":
-        """Data drifter."""
+        """Data drifter (shifts data in positive direction)."""
         if units<1:
             return self
         else:
             y = self.y_as_ts
         
         for i in range(1, self.nt):
-            y[i][:] = list([0.0] * units * i + list(y[i][: - i * units]))
+            y = y.at[i, :].set(list([0.0] * units * i + list(y[i][: - i * jnp.abs(units)])))
         
-        return SpanData(X=self.x, y = y.reshape(-1,1), L=self.L, T=self.T)
+        return SpanData(X=self.X, y = y.reshape(-1,1), L=self.L, T=self.T)
 
 @dataclass(repr=False)
 class SimulatedSpanData(SpanData):

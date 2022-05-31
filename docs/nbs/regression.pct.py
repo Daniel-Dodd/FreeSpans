@@ -14,7 +14,7 @@
 # ---
 
 # %% [markdown] pycharm={"name": "#%% md\n"}
-# # Regression
+# # Test
 #
 # In this notebook we...
 

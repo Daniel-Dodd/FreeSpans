@@ -15,5 +15,5 @@ sphinxext-opengraph
 blackjax
 dm-haiku
 gpjax
-# Install MOGPJax its-self
+# Install Spans its-self
 .

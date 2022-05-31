@@ -1,5 +1,3 @@
-git+https://github.com/thomaspinder/GPJax@44e7648
 pandas == 1.3.5
 matplotlib == 3.3.3
 scikit-learn == 1.0.2
-protobuf==3.19.0

@@ -20,8 +20,9 @@ def test_dataset(start_pipe, end_pipe, start_time, end_time, location_width, tim
 
     nt = T.shape[0]
     nl = L.shape[0]
+    
 
-    x = jnp.ones((nt*nl, 2))
+    x = jnp.array([[t, l] for t in T for l in L])
     y = jnp.ones((nt*nl, 1))
 
     # Test span dataset speciying L and T:

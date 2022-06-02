@@ -3,11 +3,7 @@ import pytest
 
 from spans.types import SpanData
 
-from gpjax.types import Dataset, NoneType, verify_dataset
-
-
-def test_nonetype():
-    assert isinstance(None, NoneType)
+from gpjax.types import Dataset, verify_dataset
 
 
 @pytest.mark.parametrize("start_pipe", [0., 1.])

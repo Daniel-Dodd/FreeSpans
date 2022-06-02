@@ -4,7 +4,6 @@ import pytest
 from spans.types import SpanData
 
 from gpjax.types import Dataset, NoneType, verify_dataset
-import matplotlib as plt
 
 
 def test_nonetype():
@@ -17,9 +16,9 @@ def test_nonetype():
 @pytest.mark.parametrize("end_time", [1., 10.])
 @pytest.mark.parametrize("location_width", [.5, 1.])
 @pytest.mark.parametrize("time_width", [.5, 1.])
-@pytest.mark.parametrize("drift_units", [0, 1, 10])
-def test_dataset(start_pipe, end_pipe, start_time, end_time, location_width, time_width ,drift_units):
+def test_dataset(start_pipe, end_pipe, start_time, end_time, location_width, time_width):
 
+    # Create artificial x and y:
     L = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
     T = jnp.arange(start_time, end_time + 1, time_width)
 
@@ -28,6 +27,8 @@ def test_dataset(start_pipe, end_pipe, start_time, end_time, location_width, tim
 
     x = jnp.ones((nt*nl, 2))
     y = jnp.ones((nt*nl, 1))
+
+    # Test span dataset speciying L and T:
     D = SpanData(X=x, y=y, L=L, T=T)
     verify_dataset(D)
     assert D.n == nt*nl
@@ -40,20 +41,21 @@ def test_dataset(start_pipe, end_pipe, start_time, end_time, location_width, tim
     assert isinstance(D, Dataset)
     assert D.L.shape == (nl, )
     assert D.T.shape == (nt, )
+    assert (D.L == L).all()
+    assert (D.T == T).all()
 
-    #assert isinstance(D.visualise(), plt.pyplot.Figure)
-
-    #assert D.y_as_ts.shape == (nt, nl)
-
-    #Ddrift = D.drift(drift_units)
-
-    #assert Ddrift.n == nt*nl
-    #assert Ddrift.nt == nt
-    #assert Ddrift.nl == nl
-    #assert Ddrift.in_dim == 2
-    #assert Ddrift.out_dim == 1
-    #assert Ddrift.X.shape == (nt*nl, 2)
-    #assert Ddrift.y.shape == (nt*nl, 1)
-    #assert isinstance(Ddrift, Dataset)
-    #assert Ddrift.L.shape == (nl, )
-    #assert Ddrift.T.shape == (nt, )
+    # Test span dataset without specifying L and T:
+    D = SpanData(X=x, y=y)
+    verify_dataset(D)
+    assert D.n == nt*nl
+    assert D.nt == nt
+    assert D.nl == nl
+    assert D.in_dim == 2
+    assert D.out_dim == 1
+    assert D.X.shape == (nt*nl, 2)
+    assert D.y.shape == (nt*nl, 1)
+    assert isinstance(D, Dataset)
+    assert D.L.shape == (nl, )
+    assert D.T.shape == (nt, )
+    assert (D.L == L).all()
+    assert (D.T == T).all()

@@ -41,6 +41,8 @@ def test_dataset(start_pipe, end_pipe, start_time, end_time, location_width, tim
     assert (D.L == L).all()
     assert (D.T == T).all()
 
+    D.visualise()
+
     # Test span dataset without specifying L and T:
     D = SpanData(X=x, y=y)
     verify_dataset(D)
@@ -56,3 +58,6 @@ def test_dataset(start_pipe, end_pipe, start_time, end_time, location_width, tim
     assert D.T.shape == (nt, )
     assert (D.L == L).all()
     assert (D.T == T).all()
+
+    
+    D.visualise()

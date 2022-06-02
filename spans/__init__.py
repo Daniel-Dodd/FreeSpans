@@ -1,5 +1,5 @@
 from .types import SpanData
-from .utils import Scaler, RegressorMetrics, ClassifierMetrics
+from .utils import Scaler, RegressorMetrics, ClassifierMetrics, confusion_matrix
 from .kernels import DriftKernel
 from .simulate import simulate_bernoulli, simulate_gaussian
 from .optimal_design import pred_entropy, pred_information, box_design, box_reveal, inpsection_region_reveal, inspection_region_design

@@ -1,4 +1,5 @@
-from typing import Optional
+from copy import deepcopy
+from typing import Optional, Union
 from .types import Array
 import jax.numpy as jnp
 from jax import lax
@@ -13,29 +14,25 @@ class Scaler:
     mu: Optional[Array] = None
     sigma: Optional[Array] = None
      
-    def __call__(self, X: Array) -> Array:
+    def __call__(self, data: Union[Array, Dataset]) -> Array:
         """Fit scaler to first observations passed."""
-        if self.mu is None or self.sigma is None:
-            self.mu = X.mean(0)
-            self.sigma = jnp.sqrt(X.var(0))
-            
-        return (X - self.mu)/ self.sigma
+        if isinstance(data, Dataset):
+            scaled_data = deepcopy(data)
+            if self.mu is None or self.sigma is None:
+                self.mu = data.X.mean(0)
+                self.sigma = jnp.sqrt(data.X.var(0))
 
-@dataclass(repr=False)
-class ScalerDataset:
-    """Covariate scaler."""
-    mu: Optional[Array] = None
-    sigma: Optional[Array] = None
-     
-    def __call__(self, data: Dataset) -> Dataset:
-        """Fit scaler to first observations passed."""
-        if self.mu is None or self.sigma is None:
-            self.mu = data.X.mean(0)
-            self.sigma = jnp.sqrt(data.X.var(0))
-
-            data.X.at[:].set((data.X - self.mu)/ self.sigma)
+            scaled_data .X = (data.X - self.mu)/ self.sigma
               
-        return data
+            return scaled_data 
+
+        else:
+            if self.mu is None or self.sigma is None:
+                self.mu = data.mean(0)
+                self.sigma = jnp.sqrt(data.var(0))
+            
+            return (data - self.mu)/ self.sigma
+        
 
 @dataclass(repr=False)
 class ClassifierMetrics:

@@ -42,8 +42,6 @@ class SpanData(Dataset):
     
         plt.yticks(jnp.arange(int(self.T.min()), int(self.T.max()) + 1, step=1))
 
-        return plt
-
     @property
     def nt(self) -> int:
         """Number of temporal points."""

@@ -16,8 +16,8 @@ class SpanData(Dataset):
 
     def __post_init__(self):
         if self.L is None and self.T is None:
-            self.L = self.X[:,1]
-            self.T = self.X[:,0]
+            self.L = jnp.unique(self.X[:,1])
+            self.T = jnp.unique(self.X[:,0])
         
     def __repr__(self) -> str:
         string = f"- Number of datapoints: {self.X.shape[0]}\n- Dimension:" f" {self.X.shape[1]}"
@@ -59,17 +59,17 @@ class SpanData(Dataset):
         """Matrix where rows comprise spatial series corresponding to each time point."""
         return self.y.reshape(self.nt, self.nl)
 
-    def drift(self, units: int) -> "SpanData":
-        """Data drifter (shifts data in positive direction)."""
-        if units<1:
-            return self
-        else:
-            y = self.y_as_ts
-        
-        for i in range(1, self.nt):
-            y = y.at[i, :].set(list([0.0] * units * i + list(y[i][: - i * jnp.abs(units)])))
-        
-        return SpanData(X=self.X, y = y.reshape(-1,1), L=self.L, T=self.T)
+    #def drift(self, units: int) -> "SpanData":
+    #    """Data drifter (shifts data in positive direction)."""
+    #    if units<1:
+    #        return self
+    #    else:
+    #        y = self.y_as_ts
+    #    
+    #    for i in range(1, self.nt):
+    #        y = y.at[i, :].set(list([0.0] * units * i + list(y[i][: - i * jnp.abs(units)])))
+    #    
+    #    return SpanData(X=self.X, y = y.reshape(-1,1), L=self.L, T=self.T)
 
 @dataclass(repr=False)
 class SimulatedSpanData(SpanData):
@@ -103,6 +103,4 @@ class SimulatedSpanData(SpanData):
         plt.yticks(jnp.arange(int(self.T.min()), int(self.T.max()) + 1, step=1))
 
         plt.tight_layout()
-
-        return plt
 

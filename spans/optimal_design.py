@@ -5,11 +5,11 @@ import jax.numpy as jnp
 from .types import Array
 from .utils import Scaler
 
-from gpjax.variational import VariationalFamily
+
 from gpjax import Dataset
 
 
-def PredEntropy(model: VariationalFamily,
+def PredEntropy(model,
                  params: dict,
                  design: Array, 
                  inner_samples: Optional[int]=32, 
@@ -60,7 +60,7 @@ def PredEntropy(model: VariationalFamily,
     return jnp.mean(jnp.log(m) - prob_max - log_exp_sum)
 
 
-def PredMutualInf(model: VariationalFamily,
+def PredMutualInf(model,
                  params: dict,
                  design: Array,
                  test: Array,

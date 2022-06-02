@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional
 from sklearn.cluster import KMeans
 
 import jax.numpy as jnp
@@ -6,9 +6,6 @@ import matplotlib.pyplot as plt
 
 import gpjax as gpx
 from gpjax.kernels import Kernel
-from gpjax.gps import NonConjugatePosterior
-from gpjax.variational import VariationalFamily
-from gpjax.sparse_gps import VariationalPosterior
 
 from .types import Array, SpanData
 
@@ -26,7 +23,7 @@ def Kmeans_initalise_inducing(train_data: SpanData, num_inducing: int) -> Array:
 
 def BernoulliSVGP(
         kernel: Kernel, train_data: SpanData, num_inducing: int
-    ) -> Tuple[NonConjugatePosterior, VariationalFamily, VariationalPosterior]:
+    ):
     """ Initialise inducing inputs via Kmeans.
     Args:
         kernel (Kernel): The GP prior kernel.
@@ -54,7 +51,7 @@ def BernoulliSVGP(
 
 def GaussianSVGP(
     kernel: Kernel, train_data: SpanData, num_inducing: int
-) -> Tuple[NonConjugatePosterior, VariationalFamily]:
+):
     """ Initialise inducing inputs via Kmeans.
     Args:
         kernel (Kernel): The GP prior kernel.

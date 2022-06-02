@@ -54,27 +54,71 @@ def test_scaler_and_scaler_dataset(start_pipe, end_pipe, start_time, end_time, l
     assert isinstance(D1_scaled, Dataset)
     assert isinstance(D2_scaled, Dataset)
 
-def test_confusion_matrix():
+def test_confusion_matrix_and_metrics():
     # test 1:
     pred = jnp.array([1.,1., 0., 1., 1., 0., 1.])
     true = jnp.array([1.,0., 0., 0., 1., 1., 1.])
-    cm = spans.confusion_matrix(pred, true)
+    cm = spans.confusion_matrix(true, pred)
+    reg_met = spans.RegressorMetrics(pred_labels=pred, true_labels=true)
+    class_met = spans.ClassifierMetrics(pred_labels=pred, true_labels=true)
+
+    tn = cm[0][0]
+    fn = cm[1][0]
+    tp = cm[1][1]
+    fp = cm[0][1]
 
     assert cm.dtype == "int32"
     assert cm[0,0] == 1
-    assert cm[0,1] == 1
-    assert cm[1,0] == 2
+    assert cm[0,1] == 2
+    assert cm[1,0] == 1
     assert cm[1,1] == 3
+
+    assert reg_met.MAE() == jnp.mean((true - pred) ** 2)
+    assert reg_met.RMSE() == jnp.sqrt(jnp.mean((true - pred) ** 2))
+    assert reg_met.MSE() == jnp.mean((true - pred) ** 2)
+
+    assert class_met.tp == tp
+    assert class_met.tn == tn
+    assert class_met.fn == fn
+    assert class_met.fp == fp
+    assert (class_met.cm == cm).all()
+
+    assert class_met.tpr() == tp/(tp + fn)
+    assert class_met.fpr() == fp/(tn + tp)
+    assert class_met.recall() == tp/(tp + fn)
+    assert class_met.precision() == tp/(tp + fp)
 
     # test 2:
     pred = jnp.array([1, 1, 0, 1, 1, 1, 1, 1])
     true = jnp.array([1, 0, 1, 1, 0, 1, 1, 1])
-    cm = spans.confusion_matrix(pred, true)
+    cm = spans.confusion_matrix(true, pred)
+    reg_met = spans.RegressorMetrics(pred_labels=pred, true_labels=true)
+    class_met = spans.ClassifierMetrics(pred_labels=pred, true_labels=true)
+
+    tn = cm[0][0]
+    fn = cm[1][0]
+    tp = cm[1][1]
+    fp = cm[0][1]
 
     assert cm.dtype == "int32"
     assert cm[0,0] == 0
-    assert cm[0,1] == 1
-    assert cm[1,0] == 2
+    assert cm[0,1] == 2
+    assert cm[1,0] == 1
     assert cm[1,1] == 5
+
+    assert reg_met.MAE() == jnp.mean((true - pred) ** 2)
+    assert reg_met.RMSE() == jnp.sqrt(jnp.mean((true - pred) ** 2))
+    assert reg_met.MSE() == jnp.mean((true - pred) ** 2)
+
+    assert class_met.tp == tp
+    assert class_met.tn == tn
+    assert class_met.fn == fn
+    assert class_met.fp == fp
+    assert (class_met.cm == cm).all()
+
+    assert class_met.tpr() == tp/(tp + fn)
+    assert class_met.fpr() == fp/(tn + tp)
+    assert class_met.recall() == tp/(tp + fn)
+    assert class_met.precision() == tp/(tp + fp)
 
 

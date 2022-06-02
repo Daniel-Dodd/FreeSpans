@@ -9,7 +9,7 @@ from .utils import Scaler
 from gpjax import Dataset
 
 
-def PredEntropy(model,
+def pred_entropy(model,
                  params: dict,
                  design: Array, 
                  inner_samples: Optional[int]=32, 
@@ -60,7 +60,7 @@ def PredEntropy(model,
     return jnp.mean(jnp.log(m) - prob_max - log_exp_sum)
 
 
-def PredMutualInf(model,
+def pred_information(model,
                  params: dict,
                  design: Array,
                  test: Array,
@@ -145,7 +145,7 @@ def PredMutualInf(model,
     return Ht + Hd - Hdt
 
 
-def Combine(a: Dataset, b: Dataset) -> Dataset:
+def combine(a: Dataset, b: Dataset) -> Dataset:
     """Combine two datasets.
     Args:
         a (gpjax.Dataset): GPJax dataset.
@@ -159,7 +159,7 @@ def Combine(a: Dataset, b: Dataset) -> Dataset:
     return Dataset(X=x, y=y)
 
 
-def BoxDesign(start_time: int, 
+def box_design(start_time: int, 
     end_time: int, 
     start_pipe: float, 
     end_pipe: float,
@@ -193,12 +193,13 @@ def BoxDesign(start_time: int,
     
     return X
 
-def InspectionRegionDesign(inspection_time: float, 
+def inspection_region_design(inspection_time: float, 
     regions: Array, 
     location_width: Optional[float] = 1., 
     scaler: Optional[Scaler] = None,
     ) -> Array:
     """ 
+    Create discrete design space for inspection regions.
     Args:
         inspection_time (float): The time at which to inspect the region.
         regions (Array): A batch of regions to inspect.
@@ -221,7 +222,7 @@ def InspectionRegionDesign(inspection_time: float,
     return X
 
 
-def BoxReveal(start_time: int, 
+def box_reveal(start_time: int, 
     end_time: int, 
     start_pipe: float, 
     end_pipe: float,
@@ -248,7 +249,7 @@ def BoxReveal(start_time: int,
     return Dataset(X=x_time[region_indicies], y=y_time[region_indicies])
 
 
-def InpsectionRegionReveal(inspection_time: float, 
+def inpsection_region_reveal(inspection_time: float, 
                             regions: Array, 
                             data: Dataset,
                             ) -> Dataset:

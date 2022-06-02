@@ -9,7 +9,7 @@ from gpjax.kernels import Kernel
 
 from .types import Array, SpanData
 
-def Kmeans_initalise_inducing(train_data: SpanData, num_inducing: int) -> Array:
+def kmeans_init_inducing(train_data: SpanData, num_inducing: int) -> Array:
     """ Initialise inducing inputs via Kmeans.
     Args:
         train_data (SpanData): The training span dataset.
@@ -21,7 +21,7 @@ def Kmeans_initalise_inducing(train_data: SpanData, num_inducing: int) -> Array:
     z = kmeans.cluster_centers_.copy()
     return z
 
-def BernoulliSVGP(
+def bernoulli_svgp(
         kernel: Kernel, train_data: SpanData, num_inducing: int
     ):
     """ Initialise inducing inputs via Kmeans.
@@ -34,7 +34,7 @@ def BernoulliSVGP(
     """
 
     # Initialise inducing inputs
-    z = Kmeans_initalise_inducing(train_data, num_inducing)
+    z = kmeans_init_inducing(train_data, num_inducing)
     
     # Model
     prior = gpx.Prior(kernel=kernel)
@@ -49,7 +49,7 @@ def BernoulliSVGP(
     
     return posterior, variational_family, svgp
 
-def GaussianSVGP(
+def gaussian_svgp(
     kernel: Kernel, train_data: SpanData, num_inducing: int
 ):
     """ Initialise inducing inputs via Kmeans.
@@ -61,7 +61,7 @@ def GaussianSVGP(
         Tuple[NonConjugatePosterior, VariationalFamily, VariationalPosterior]: An tuple for SVGP training and prediction.
     """
     # Initialise inducing inputs
-    z = Kmeans_initalise_inducing(train_data, num_inducing)
+    z = kmeans_init_inducing(train_data, num_inducing)
     
     # Model
     prior = gpx.Prior(kernel=kernel)
@@ -75,22 +75,3 @@ def GaussianSVGP(
     svgp = gpx.SVGP(posterior=posterior, variational_family=variational_family)
     
     return posterior, variational_family, svgp
-
-def plot_elbo(history: Array, plot_step: Optional[int] = 10):
-    """Plot ELBO training history.
-    Args:
-        history (Array): Training history values.
-        plot_step (int, optional): Thins training history for a clearer plot. Defaults to 10.
-    Returns:
-        Plot
-    """
-    elbo_history = -jnp.array(history)
-    total_iterations = elbo_history.shape[0]
-    iterations = jnp.arange(1, total_iterations + 1)
-
-    plt.figure(constrained_layout = True)
-    plt.plot(iterations[::plot_step], elbo_history[::plot_step])
-    plt.ylabel("ELBO")
-    plt.xlabel("Iterations")
-
-    return plt

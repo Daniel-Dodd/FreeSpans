@@ -10,7 +10,7 @@ from .utils import Scaler
 from .types import Array, SimulatedSpanData
 
 
-def BernoulliSim(kernel: Kernel,
+def simulate_bernoulli(kernel: Kernel,
             start_time: float, 
             end_time: float, 
             start_pipe: float, 
@@ -62,7 +62,7 @@ def BernoulliSim(kernel: Kernel,
     return SimulatedSpanData(X=X, y=y_sample, L=L, T=T, f=f_sample) 
 
 
-def GaussianSim(kernel: Kernel,
+def simulate_gaussian(kernel: Kernel,
             start_time: int, 
             end_time: int, 
             start_pipe: float, 

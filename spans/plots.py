@@ -22,12 +22,12 @@ def plot_rocpr(truth: SpanData,
         year (Array): The year to plot.
         naive (bool): Whether to plot the naive curve.
     Returns:    
-        plt: The plot.
+        Plot
     """
     
     y = truth.y
     
-    plt.figure(figsize=(10, 4), constrained_layout=True)
+    plt.figure(figsize=(10, 4))
     
     if year is not None:
         if naive is not None:
@@ -73,8 +73,6 @@ def plot_rocpr(truth: SpanData,
     plt.legend()
 
     plt.tight_layout()
-    
-    return plt
 
 
 
@@ -88,7 +86,7 @@ def plot_mse(pred_labels: Array, true_data: SpanData, names: List[str], year: in
         year (int): The year to plot.
         naive (bool): Whether to plot the naive prediction.
     Returns:
-        plt: The plot.
+        Plot
     """
 
     L = true_data.L
@@ -113,7 +111,6 @@ def plot_mse(pred_labels: Array, true_data: SpanData, names: List[str], year: in
     plt.legend()
     
 
-    return plt
 
 def plot_pred(pred_labels: Array, true_data: SpanData):
     """
@@ -122,7 +119,7 @@ def plot_pred(pred_labels: Array, true_data: SpanData):
         pred_labels (Array): The predictions of the model.
         true_data (SpanData): The true data.
     Returns:
-        plt: The plot.
+        Plot
     """
     plt.figure(figsize=(6, 3), constrained_layout=True)
     XX, YY = jnp.meshgrid(true_data.T, true_data.L)
@@ -132,8 +129,6 @@ def plot_pred(pred_labels: Array, true_data: SpanData):
     plt.xlabel("Pipe KP (km)")
     plt.colorbar()
 
-    return plt
-
 def add_drift(test_data: Dataset, theta: Array, scaler: Scaler = None):
     """
     Add drift to the prediction plot.
@@ -142,7 +137,7 @@ def add_drift(test_data: Dataset, theta: Array, scaler: Scaler = None):
         theta (Array): The drift angle parameter of the model.
         scaler (Scaler): The scaler used to scale the data.
     Returns:
-        plt: The plot.
+        Plot
     """
 
     x = jnp.linspace(test_data.L.min(), test_data.L.max(), 200)
@@ -157,4 +152,21 @@ def add_drift(test_data: Dataset, theta: Array, scaler: Scaler = None):
     plt.plot(x, y, color="red")
     plt.ylim(test_data.T.min(), test_data.T.max())
 
-    return plt
+
+
+def plot_elbo(history: Array, plot_step: Optional[int] = 10):
+    """Plot ELBO training history.
+    Args:
+        history (Array): Training history values.
+        plot_step (int, optional): Thins training history for a clearer plot. Defaults to 10.
+    Returns:
+        Plot
+    """
+    elbo_history = -jnp.array(history)
+    total_iterations = elbo_history.shape[0]
+    iterations = jnp.arange(1, total_iterations + 1)
+
+    plt.figure(constrained_layout = True)
+    plt.plot(iterations[::plot_step], elbo_history[::plot_step])
+    plt.ylabel("ELBO")
+    plt.xlabel("Iterations")

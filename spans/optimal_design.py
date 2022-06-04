@@ -8,6 +8,15 @@ from .utils import Scaler
 
 from gpjax import Dataset
 
+def compute_percentages(regions: Array, data: Dataset) -> float:
+    """Compute the percentage of spans in each region.
+    Args:
+        regions (Array): A batch of regions to inspect.
+        dataset (Dataset): The dataset to compute the percentages for.
+    Returns:
+        float: The percentage of spans in each region.
+    """
+    return jnp.mean(inpsection_region_reveal(regions, data))
 
 def pred_entropy(model,
                  params: dict,
@@ -144,21 +153,6 @@ def pred_information(model,
 
     return Ht + Hd - Hdt
 
-
-def combine(a: Dataset, b: Dataset) -> Dataset:
-    """Combine two datasets.
-    Args:
-        a (gpjax.Dataset): GPJax dataset.
-        b (gpjax.Dataset): GPJax dataset.
-    Returns:
-        gpjax.Dataset: Combined data.
-    """
-    x = jnp.concatenate((a.X, b.X))  
-    y = jnp.concatenate((a.y, b.y))  
-
-    return Dataset(X=x, y=y)
-
-
 def box_design(start_time: int, 
     end_time: int, 
     start_pipe: float, 
@@ -221,6 +215,52 @@ def inspection_region_design(inspection_time: float,
     
     return X
 
+from .types import SpanData
+
+def at_reveal(at_time, data:Dataset) -> Dataset:
+    """
+    Filter data to only include points at the given time.
+    Args:
+        at_time (float): The time at which to filter the data.
+        data (Dataset): The data to filter.
+    Returns:
+        Dataset: The filtered data.
+    """
+    x, y = data.X, data.y
+
+    indicies = (x[:,0] == at_time)
+
+    return Dataset(X=x[indicies], y=y[indicies])
+
+def before_reveal(before_time, data: Dataset) -> Dataset:
+    """
+    Filter data to only include data before the reveal.
+    Args:
+        before_time (float): The time before the reveal.
+        data (Dataset): The dataset to filter.
+    Returns:
+        Dataset: The filtered dataset.
+    """
+    x, y = data.X, data.y
+
+    indicies = (x[:, 0] <= before_time)
+
+    return Dataset(X=x[indicies], y=y[indicies])
+
+def after_reveal(after_time, data: Dataset) -> Dataset:
+    """
+    Filter data to only include data after the reveal.
+    Args:
+        after_time (float): The time after the reveal.
+        data (Dataset): The dataset to filter.
+    Returns:
+        Dataset: The filtered dataset.
+    """
+    x, y = data.X, data.y
+
+    indicies = (x[:, 0] >= after_time)
+
+    return Dataset(X=x[indicies], y=y[indicies])
 
 def box_reveal(start_time: int, 
     end_time: int, 
@@ -240,13 +280,23 @@ def box_reveal(start_time: int,
     """
     x, y = data.X, data.y
 
-    time_indicies = (x[:,0] <= end_time) & (x[:,0] >= start_time)
-    x_time = x[time_indicies]
-    y_time = y[time_indicies]
-
-    region_indicies =(x_time[:,1] <= end_pipe) & (x_time[:,1] >= start_pipe)
+    indicies = (x[:,0] <= end_time) & (x[:,0] >= start_time) & (x[:,1] <= end_pipe) & (x[:,1] >= start_pipe)
     
-    return Dataset(X=x_time[region_indicies], y=y_time[region_indicies])
+    return SpanData(X=x[indicies], y=y[indicies])
+
+def naive_predictor(train_data: Dataset) -> Array:
+    """
+    Get a naive predictor for the data.
+    Args:
+        train_data (Dataset): The training data.
+    Returns:
+        Array: The naive predictor.
+    """
+    return train_data.y_as_ts[-1]
+
+def make_naive_predictor(train_data: Dataset, test_data: Dataset) -> Array:
+    T = jnp.unique(test_data.X[:,0])
+    return jnp.array([naive_predictor(train_data) for time in T]).reshape(-1, 1)
 
 
 def inpsection_region_reveal(inspection_time: float, 

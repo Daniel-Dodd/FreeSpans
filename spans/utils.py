@@ -32,6 +32,20 @@ class Scaler:
                 self.sigma = jnp.sqrt(data.var(0))
             
             return (data - self.mu)/ self.sigma
+
+def combine(a: Dataset, b: Dataset) -> Dataset:
+    """Combine two datasets.
+    Args:
+        a (gpjax.Dataset): GPJax dataset.
+        b (gpjax.Dataset): GPJax dataset.
+    Returns:
+        gpjax.Dataset: Combined data.
+    """
+
+    x = jnp.concatenate((a.X, b.X))  
+    y = jnp.concatenate((a.y, b.y))  
+
+    return Dataset(X=x, y=y)
         
 
 @dataclass(repr=False)

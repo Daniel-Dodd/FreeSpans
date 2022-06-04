@@ -83,7 +83,7 @@ class SimulatedSpanData(SpanData):
         plt.subplot(1,2,1)
         plt.title('Observations')
         plt.ylabel("Time")
-        plt.xlabel("Pipe KP (km)")
+        plt.xlabel("Pipe")
         plt.yticks(jnp.arange(int(self.T.min()), int(self.T.max()) + 1, step=1))
 
         if all((self.y == 1.) + (self.y == 0.)):
@@ -95,7 +95,7 @@ class SimulatedSpanData(SpanData):
         plt.subplot(1,2,2)
         plt.title('Seabed')
         plt.ylabel("Time")
-        plt.xlabel("Pipe KP")
+        plt.xlabel("Pipe")
         plt.contourf(YY,XX, self.f.reshape(len(self.T),len(self.L)).T, levels=10)
         plt.colorbar()
         plt.yticks(jnp.arange(int(self.T.min()), int(self.T.max()) + 1, step=1))

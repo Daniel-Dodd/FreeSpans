@@ -6,12 +6,9 @@ import spans
 
 import pytest
 
-@pytest.mark.parametrize("start_pipe", [0., 1.])
-@pytest.mark.parametrize("end_pipe", [10., 20.])
-@pytest.mark.parametrize("start_time", [0., -10.])
-@pytest.mark.parametrize("end_time", [1., 10.])
-@pytest.mark.parametrize("location_width", [.5, 1.])
-@pytest.mark.parametrize("time_width", [.5, 1.])
+@pytest.mark.parametrize("start_pipe, end_pipe", [(0., 10.), (1., 20.)])
+@pytest.mark.parametrize("start_time, end_time", [(0., 10.), (1., 20.)])
+@pytest.mark.parametrize("location_width, time_width" , [(.5, 1.), (1., .5)])
 def test_scaler_and_scaler_dataset(start_pipe, end_pipe, start_time, end_time, location_width, time_width):
     L1 = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
     T1 = jnp.arange(start_time, end_time + 1, time_width)

@@ -51,7 +51,7 @@ sys.path.append(
 
 # -- Project information -----------------------------------------------------
 
-project = "Spans"
+project = "FreeSpans"
 copyright = "2022, Daniel Dodd"
 author = "Daniel Dodd"
 
@@ -103,7 +103,7 @@ with open("latex_symbols.tex", "r") as f:
                 mathjax3_config["tex"]["macros"][macro[0]] = ["{" + macro[3] + "}", int(macro[2])]
 
 latex_documents = [
-    ("contents", "spans.tex", "Spans", "Daniel Dodd"),
+    ("contents", "freespans.tex", "FreeSpans", "Daniel Dodd"),
 ]
 
 latex_engine = "xelatex"  # or 'lualatex'
@@ -121,10 +121,10 @@ latex_use_modindex = True
 texinfo_documents = [
     (
         "contents",
-        "spans",
-        "Spans Documentation",
+        "freespans",
+        "FreeSpans Documentation",
         "Daniel Dodd",
-        "Spans",
+        "FreeSpans",
         "Jax Gaussian processes",
         "Statistics",
         1,

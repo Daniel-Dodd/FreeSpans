@@ -7,7 +7,7 @@ coverage:
         threshold: 5%
 
 fixes:
-  - "/home/runner/work/spans/spans/::" # Correct paths
+  - "/home/runner/work/freespans/freespans/::" # Correct paths
 
 ignore:
   - "setup.py"

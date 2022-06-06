@@ -1,8 +1,8 @@
 <h1 align='center'>FreeSpans</h1>
 <h2 align='center'>Probabilistic models for free-spans in Jax.</h2>
 
-[![codecov](https://codecov.io/gh/Daniel-Dodd/Spans/branch/master/graph/badge.svg?token=MPG27ZL684)](https://codecov.io/gh/Daniel-Dodd/Spans)
-[![CodeFactor](https://www.codefactor.io/repository/github/daniel-dodd/spans/badge)](https://www.codefactor.io/repository/github/daniel-dodd/spans)
+[![codecov](https://codecov.io/gh/Daniel-Dodd/FreeSpans/branch/master/graph/badge.svg?token=MPG27ZL684)](https://codecov.io/gh/Daniel-Dodd/FreeSpans)
+[![CodeFactor](https://www.codefactor.io/repository/github/daniel-dodd/freespans/badge)](https://www.codefactor.io/repository/github/daniel-dodd/freespans)
 [![Documentation Status](https://readthedocs.org/projects/freespans/badge/?version=latest)](https://freespans.readthedocs.io/en/latest/?badge=latest)
 
 

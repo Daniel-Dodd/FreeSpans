@@ -1,3 +1,3 @@
-Spans Principles
+FreeSpans Principles
 ======================
 

@@ -48,18 +48,18 @@ readme = open("README.md").read()
 
 
 setup(
-    name="Spans",
+    name="FreeSpans",
     version=version,
     author="Daniel Dodd",
     author_email="d.dodd1@lancaster.ac.uk",
     packages=find_packages(".", exclude=["tests"]),
     license="LICENSE",
-    description="Didactic Gaussian processes in Jax.",
+    description="Probabilistic modelling and optimal design for free-spans in Jax.",
     long_description=readme,
     long_description_content_type="text/markdown",
     project_urls={
         "Documentation": "https://http://freespans.readthedocs.io/",
-        "Source": "https://github.com/daniel-dodd/Spans",
+        "Source": "https://github.com/daniel-dodd/FreeSpans",
     },
     install_requires=parse_requirements_file("requirements.txt"),
     extras_require=EXTRAS,

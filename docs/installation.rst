@@ -5,8 +5,8 @@ To install the latest release execute the following:
 
 .. code-block:: bash
 
-    git clone https://github.com/daniel-dodd/Spans.git
-    cd Spans
+    git clone https://github.com/daniel-dodd/FreeSpans.git
+    cd FreeSpans
     pip install -r requirements.txt
     python setup.py develop
 

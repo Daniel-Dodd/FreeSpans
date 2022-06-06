@@ -1,12 +1,12 @@
 :hide-toc: true
 
 
-Welcome to Spans' documentation!
+Welcome to FreeSpans!
 =================================
 
-Spans is libray to model spans built on GPJax that supports GPU acceleration and just-in-time compilation. 
+FreeSpans is libray to model submarine pipeline spans built on GPJax that supports GPU acceleration and just-in-time compilation. 
 
-You can view the source code for Spans `here on Github <https://github.com/daniel-dodd/Spans>`_.
+You can view the source code for FreeSpans `here on Github <https://github.com/daniel-dodd/FreeSpans>`_.
 
 
 

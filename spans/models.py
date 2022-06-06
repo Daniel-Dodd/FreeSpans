@@ -45,7 +45,7 @@ def bernoulli_svgp(
     variational_family = gpx.WhitenedVariationalGaussian(prior=prior, inducing_inputs=z)
 
     # SVGP object:
-    svgp = gpx.SVGP(posterior=posterior, variational_family=variational_family)
+    svgp = gpx.StochasticVI(posterior=posterior, variational_family=variational_family)
     
     return posterior, variational_family, svgp
 
@@ -72,6 +72,6 @@ def gaussian_svgp(
     variational_family = gpx.WhitenedVariationalGaussian(prior=prior, inducing_inputs=z)
 
     # SVGP object:
-    svgp = gpx.SVGP(posterior=posterior, variational_family=variational_family)
+    svgp = gpx.StochasticVI(posterior=posterior, variational_family=variational_family)
     
     return posterior, variational_family, svgp

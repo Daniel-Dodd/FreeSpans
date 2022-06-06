@@ -2,8 +2,8 @@ from typing import Optional
 import jax.random as jr
 import jax.numpy as jnp
 
-from .types import Array
-from .utils import Scaler
+from .types import Array, SpanData
+from jax import vmap
 
 
 from gpjax import Dataset
@@ -18,7 +18,8 @@ def compute_percentages(regions: Array, data: Dataset) -> float:
     """
     return jnp.mean(inpsection_region_reveal(regions, data))
 
-def pred_entropy(model,
+def pred_entropy(posterior,
+                variational_family,
                  params: dict,
                  design: Array, 
                  inner_samples: Optional[int]=32, 
@@ -30,7 +31,8 @@ def pred_entropy(model,
         i.e., we compute the integral - ∫ [∫p(y|f, d) q(f|d) df] log([∫p(y|f, d) q(f|d) df]) dy
 
     Args:
-        model (gpjax.VariationalFamily): GPJax variational model.
+        posterior (gpjax.Posterior): GPJax posterior.
+        variational_family (gpjax.VariationalFamily): GPJax variational model.
         params (dict): The model's parameters.
         end_time (float): The end year for the simulating the data.
         inner_samples (int, optional): The number of inner NMC samples to be used in the approximation.
@@ -48,17 +50,17 @@ def pred_entropy(model,
     
     key1, key2, key3 = jr.split(key, num = 3)
 
-    fd = model.predict(params)(d)
+    fd = variational_family.predict(params)(d)
 
     # Outer samples.
     fn_samples = fd.sample(seed=key1, sample_shape=(n,))
-    yn_samples = model.likelihood.link_function(fn_samples, params).sample(seed=key2)
+    yn_samples = posterior.likelihood.link_function(fn_samples, params).sample(seed=key2)
 
     # Inner samples.
     fnm_samples = fd.sample(seed=key3, sample_shape=(n,m))
 
     # Entropy calculation H[y].
-    pnm_dist = model.likelihood.link_function(fnm_samples, params)
+    pnm_dist = posterior.likelihood.link_function(fnm_samples, params)
     pnm_prob = pnm_dist.prob(yn_samples[:, None, :])
     
     prob_sum = jnp.sum(jnp.log(pnm_prob), axis=2)
@@ -69,7 +71,8 @@ def pred_entropy(model,
     return jnp.mean(jnp.log(m) - prob_max - log_exp_sum)
 
 
-def pred_information(model,
+def pred_information(posterior,
+                variational_family,
                  params: dict,
                  design: Array,
                  test: Array,
@@ -83,7 +86,8 @@ def pred_information(model,
                                                                 [∫p(y_d|f, d) q(f|d) df][∫p(y_t|f, t) q(f|t) df]) d[y_d, y_t]
 
     Args:
-        model (gpjax.VariationalFamily): GPJax variational model.
+        posterior (gpjax.Posterior): GPJax posterior.
+        variational_family (gpjax.VariationalFamily): GPJax variational model.
         params (dict): The model's parameters.
         end_time (float): The end year for the simulating the data.
         inner_samples (int, optional): The number of inner NMC samples to be used in the approximation.
@@ -103,13 +107,13 @@ def pred_information(model,
 
     key1, key2, key3 = jr.split(key, num = 3)
 
-    fdt = model.predict(params)(dt)
-    fd = model.predict(params)(d)
-    ft = model.predict(params)(t)
+    fdt = variational_family.predict(params)(dt)
+    fd = variational_family.predict(params)(d)
+    ft = variational_family.predict(params)(t)
 
     # Outer samples.
     fdt_n_samples = fdt.sample(seed=key1, sample_shape=(n,))
-    ydt_n_samples = model.likelihood.link_function(fdt_n_samples, params).sample(seed=key2)
+    ydt_n_samples = posterior.likelihood.link_function(fdt_n_samples, params).sample(seed=key2)
     yd_n_samples = ydt_n_samples[:,:d.shape[0]]
     yt_n_samples = ydt_n_samples[:,d.shape[0]:]
 
@@ -119,7 +123,7 @@ def pred_information(model,
     ft_nm_samples = ft.sample(seed=key3, sample_shape=(n,m))
 
     # Entropy calculation H[y_d, y_t].
-    pdt_nm_dist = model.likelihood.link_function(fdt_nm_samples, params)
+    pdt_nm_dist = posterior.likelihood.link_function(fdt_nm_samples, params)
     pdt_nm_prob = pdt_nm_dist.prob(ydt_n_samples[:, None, :])
 
     prob_sum = jnp.sum(jnp.log(pdt_nm_prob), axis=2)
@@ -130,7 +134,7 @@ def pred_information(model,
     Hdt = jnp.mean(jnp.log(m) - prob_max - log_exp_sum)
 
     # Entropy calculation H[y_d].
-    pd_nm_dist = model.likelihood.link_function(fd_nm_samples, params)
+    pd_nm_dist = posterior.likelihood.link_function(fd_nm_samples, params)
     pd_nm_prob = pd_nm_dist.prob(yd_n_samples[:, None, :])
 
     prob_sum = jnp.sum(jnp.log(pd_nm_prob), axis=2)
@@ -141,7 +145,7 @@ def pred_information(model,
     Hd = jnp.mean(jnp.log(m) - prob_max - log_exp_sum)
 
     # Entropy calculation H[y_t].
-    pt_nm_dist = model.likelihood.link_function(ft_nm_samples, params)
+    pt_nm_dist = posterior.likelihood.link_function(ft_nm_samples, params)
     pt_nm_prob = pt_nm_dist.prob(yt_n_samples[:, None, :])
 
     prob_sum = jnp.sum(jnp.log(pt_nm_prob), axis=2)
@@ -158,8 +162,7 @@ def box_design(start_time: int,
     start_pipe: float, 
     end_pipe: float,
     time_width: Optional[float] = 1.,
-    location_width: Optional[float] = 1.,
-    scaler: Optional[Scaler] = None,
+    location_width: Optional[float] = 1.
     ) -> Array:
     """Create discrete box-shaped design space.
     Args:
@@ -170,7 +173,6 @@ def box_design(start_time: int,
         time_width (float, optional): The temporal distance between design points e.g.,
                                 1. is once per time unit, .5 is twice per time unit.
         location_width (float, optional): The spatial distance between design points.
-        scaler (Scaler, optional): A scalar for the covariates.
     Returns:
         Array: Batch of design points.
     """
@@ -179,18 +181,12 @@ def box_design(start_time: int,
     L = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
     T = jnp.arange(start_time, end_time + 1, time_width)
     
-    # Create covariates:
-    X = jnp.array([[t, l] for t in T for l in L])
+    return vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
 
-    if scaler is not None:
-        X = scaler(X)
-    
-    return X
 
 def inspection_region_design(inspection_time: float, 
     regions: Array, 
-    location_width: Optional[float] = 1., 
-    scaler: Optional[Scaler] = None,
+    location_width: Optional[float] = 1.
     ) -> Array:
     """ 
     Create discrete design space for inspection regions.
@@ -198,24 +194,16 @@ def inspection_region_design(inspection_time: float,
         inspection_time (float): The time at which to inspect the region.
         regions (Array): A batch of regions to inspect.
         location_width (float, optional): The spatial distance between design points.
-        scaler (Scaler, optional): A scalar for the covariates.
     Returns:
         Array: A batch of design points.
     """
+    L = jnp.arange(regions.min(), regions.max(), location_width) + location_width/2.
+    x = vmap(lambda l: jnp.array([inspection_time, l]))(L)
 
-    # Create pipe locations and time indicies:
-    d = {(float(region[0]), float(region[1])): jnp.arange(region[0], region[1], location_width) + location_width/2. for region in regions}
-    L = jnp.concatenate(list(d.values()))
-
-    # Create covariates:
-    X = jnp.array([[inspection_time, l] for l in L])
-
-    if scaler is not None:
-        X = scaler(X)
+    indicies = vmap(lambda point: ((point < regions.reshape(-1)).argmax() % 2).astype(bool))(x[:,1])
     
-    return X
+    return x[indicies]
 
-from .types import SpanData
 
 def at_reveal(at_time, data:Dataset) -> Dataset:
     """
@@ -284,7 +272,7 @@ def box_reveal(start_time: int,
     
     return SpanData(X=x[indicies], y=y[indicies])
 
-def naive_predictor(train_data: Dataset) -> Array:
+def naive_predictor(data):
     """
     Get a naive predictor for the data.
     Args:
@@ -292,7 +280,17 @@ def naive_predictor(train_data: Dataset) -> Array:
     Returns:
         Array: The naive predictor.
     """
-    return train_data.y_as_ts[-1]
+    x, y = data.X, data.y
+
+    indicies = x[:,0].argsort()
+
+    x = x[indicies]
+    y = y[indicies]
+
+    locations = jnp.unique(x[:,1])
+
+    return vmap(lambda loc: y[::-1][(x[::-1,1] == loc).argmax()])(locations)
+    
 
 def make_naive_predictor(train_data: Dataset, test_data: Dataset) -> Array:
     T = jnp.unique(test_data.X[:,0])
@@ -330,6 +328,19 @@ def inpsection_region_reveal(inspection_time: float,
     
     assert len(x_time)!=0, "inspection_time not in dataset covariates"
     
-    region_indicies = jnp.array([bool((point < regions.reshape(-1)).argmax() % 2) for point in x_time[:,1]])
+    region_indicies = vmap(lambda point: ((point < regions.reshape(-1)).argmax() % 2).astype(bool))(x_time[:,1])
     
     return Dataset(X=x_time[region_indicies], y=y_time[region_indicies])
+
+
+def optimal_design(aquisition, posterior, variational_family, params , inspection_time, regions):
+    
+    utility = lambda region: aquisition(posterior=posterior,
+                   variational_family=variational_family, 
+                   params=params,            
+                   design = inpsection_region_reveal(inspection_time, jnp.atleast_2d(region)),
+                  )
+
+    utilities = jnp.array([utility(region) for region in regions])
+        
+    return utilities 

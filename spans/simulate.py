@@ -1,6 +1,7 @@
 from typing import Optional, Tuple
 import jax.random as jr
 import jax.numpy as jnp
+from jax import vmap
 
 from gpjax.likelihoods import Bernoulli, Gaussian
 from gpjax.kernels import Kernel
@@ -43,7 +44,7 @@ def simulate_bernoulli(kernel: Kernel,
     T = jnp.arange(start_time, end_time + 1, time_width)
     
     # Create covariates:
-    X = jnp.array([[t, l] for t in T for l in L])
+    X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
 
     if scaler is not None:
         X = scaler(X)
@@ -95,7 +96,7 @@ def simulate_indicator(kernel: Kernel,
     T = jnp.arange(start_time, end_time + 1, time_width)
     
     # Create covariates:
-    X = jnp.array([[t, l] for t in T for l in L])
+    X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
 
     if scaler is not None:
         X = scaler(X)
@@ -145,7 +146,7 @@ def simulate_gaussian(kernel: Kernel,
     T = jnp.arange(start_time, end_time + 1, time_width)
     
     # Create covariates:
-    X = jnp.array([[t, l] for t in T for l in L])
+    X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
 
     if scaler is not None:
         X = scaler(X)

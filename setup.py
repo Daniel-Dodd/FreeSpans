@@ -43,7 +43,7 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-version = find_version("spans", "__init__.py")
+version = find_version("freespans", "__init__.py")
 readme = open("README.md").read()
 
 

@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import pytest
 
-from spans.types import SpanData, SimulatedSpanData
+from freespans.types import SpanData, SimulatedSpanData
 
 from gpjax.types import Dataset, verify_dataset
 

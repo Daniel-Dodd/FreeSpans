@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import gpjax as gpx
 
 import pytest
-import spans
+import freespans
 from jax import vmap
 
 def dataset():
@@ -24,7 +24,7 @@ def dataset():
 @pytest.mark.parametrize("num_inducing", [1, 2, 10])
 def test_kmeans(num_inducing):
     D = dataset()
-    z = spans.models.kmeans_init_inducing(D, num_inducing)
+    z = freespans.models.kmeans_init_inducing(D, num_inducing)
 
     assert z.shape == (num_inducing, 2)
 
@@ -34,14 +34,14 @@ def test_svgp(num_inducing, type):
     D = dataset()
 
     if type == "bernoulli":
-        posterior, variational_family, svgp = spans.models.bernoulli_svgp(
+        posterior, variational_family, svgp = freespans.models.bernoulli_svgp(
             gpx.kernels.RBF(), D, num_inducing
         )
 
         assert isinstance(posterior.likelihood, gpx.Bernoulli)
         assert isinstance(svgp.posterior, gpx.gps.NonConjugatePosterior)
     elif type == "gaussian":
-        posterior, variational_family, svgp = spans.models.gaussian_svgp(
+        posterior, variational_family, svgp = freespans.models.gaussian_svgp(
             gpx.kernels.RBF(), D, num_inducing
         )
         assert isinstance(posterior.likelihood, gpx.Gaussian)

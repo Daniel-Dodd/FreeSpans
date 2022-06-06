@@ -12,7 +12,7 @@ import pytest
 
 from jax import vmap
 import gpjax as gpx
-import spans
+import freespans
 
 def dataset():
     # Create pipe locations and time indicies:
@@ -32,7 +32,7 @@ def dataset():
 def test_compute_percentages():
     D = dataset()
     regions = jnp.array([[-.5, 0.], [.5, 1.5]])
-    percentage = spans.optimal_design.compute_percentages(regions, D)
+    percentage = freespans.optimal_design.compute_percentages(regions, D)
     assert percentage.shape == ()
     assert percentage.dtype == jnp.float32 or jnp.float64
 

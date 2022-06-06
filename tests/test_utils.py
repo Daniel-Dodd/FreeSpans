@@ -2,7 +2,7 @@ import jax.numpy as jnp
 
 from gpjax import Dataset
 
-import spans
+import freespans
 
 import pytest
 

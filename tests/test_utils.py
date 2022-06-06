@@ -26,7 +26,7 @@ def test_scaler_and_scaler_dataset(start_pipe, end_pipe, start_time, end_time, l
     y2 = jnp.ones((T2.shape[0]*L2.shape[0], 1))
 
     # Test scaler:
-    scaler = spans.Scaler()
+    scaler = freespans.Scaler()
 
     x1_scaled = scaler(x1)
     x2_scaled = scaler(x2)
@@ -40,7 +40,7 @@ def test_scaler_and_scaler_dataset(start_pipe, end_pipe, start_time, end_time, l
     D1 = Dataset(X=x1, y=y1)
     D2 = Dataset(X=x2, y=y2)
 
-    scaler = spans.Scaler()
+    scaler = freespans.Scaler()
     D1_scaled = scaler(D1)
     D2_scaled = scaler(D2)
 
@@ -55,7 +55,7 @@ def test_combine():
     D1 = Dataset(X=jnp.array([[0, 0], [1, 1]]), y=jnp.array([[1], [2]]))
     D2 = Dataset(X=jnp.array([[2, 2], [3, 3]]), y=jnp.array([[3], [4]]))
 
-    D_combined = spans.combine(D1, D2)
+    D_combined = freespans.combine(D1, D2)
 
     assert D_combined.X.shape == (D1.X.shape[0] + D2.X.shape[0], D1.X.shape[1])
     assert D_combined.y.shape == (D1.y.shape[0] + D2.y.shape[0], D1.y.shape[1])
@@ -66,9 +66,9 @@ def test_confusion_matrix_and_metrics():
     # test 1:
     pred = jnp.array([1.,1., 0., 1., 1., 0., 1.])
     true = jnp.array([1.,0., 0., 0., 1., 1., 1.])
-    cm = spans.confusion_matrix(true, pred)
-    reg_met = spans.RegressorMetrics(pred_labels=pred, true_labels=true)
-    class_met = spans.ClassifierMetrics(pred_labels=pred, true_labels=true)
+    cm = freespans.confusion_matrix(true, pred)
+    reg_met = freespans.RegressorMetrics(pred_labels=pred, true_labels=true)
+    class_met = freespans.ClassifierMetrics(pred_labels=pred, true_labels=true)
 
     tn = cm[0][0]
     fn = cm[1][0]
@@ -99,9 +99,9 @@ def test_confusion_matrix_and_metrics():
     # test 2:
     pred = jnp.array([1, 1, 0, 1, 1, 1, 1, 1])
     true = jnp.array([1, 0, 1, 1, 0, 1, 1, 1])
-    cm = spans.confusion_matrix(true, pred)
-    reg_met = spans.RegressorMetrics(pred_labels=pred, true_labels=true)
-    class_met = spans.ClassifierMetrics(pred_labels=pred, true_labels=true)
+    cm = freespans.confusion_matrix(true, pred)
+    reg_met = freespans.RegressorMetrics(pred_labels=pred, true_labels=true)
+    class_met = freespans.ClassifierMetrics(pred_labels=pred, true_labels=true)
 
     tn = cm[0][0]
     fn = cm[1][0]

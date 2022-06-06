@@ -16,7 +16,7 @@ def compute_percentages(regions: Array, data: Dataset) -> float:
     Returns:
         float: The percentage of spans in each region.
     """
-    return jnp.mean(inpsection_region_reveal(regions, data))
+    return jnp.mean(region_reveal(regions, data).y).squeeze()
 
 def pred_entropy(posterior,
                 variational_family,
@@ -272,30 +272,23 @@ def box_reveal(start_time: int,
     
     return SpanData(X=x[indicies], y=y[indicies])
 
-def naive_predictor(data):
-    """
-    Get a naive predictor for the data.
+
+def region_reveal(
+    regions: Array, 
+    data: Dataset,
+    ) -> Dataset:
+    """Filter data to only include points in the given regions.
     Args:
-        train_data (Dataset): The training data.
+        regions (Array): A batch of regions to inspect.
+        data (gpjax.Dataset): The dataset to reveal.
     Returns:
-        Array: The naive predictor.
+        gpjax.Dataset: Revealed data.
     """
     x, y = data.X, data.y
 
-    indicies = x[:,0].argsort()
+    indicies = (x[:,1] <= regions.max()) & (x[:,1] >= regions.min())
 
-    x = x[indicies]
-    y = y[indicies]
-
-    locations = jnp.unique(x[:,1])
-
-    return vmap(lambda loc: y[::-1][(x[::-1,1] == loc).argmax()])(locations)
-    
-
-def make_naive_predictor(train_data: Dataset, test_data: Dataset) -> Array:
-    T = jnp.unique(test_data.X[:,0])
-    return jnp.array([naive_predictor(train_data) for time in T]).reshape(-1, 1)
-
+    return SpanData(X=x[indicies], y=y[indicies])
 
 def inpsection_region_reveal(inspection_time: float, 
                             regions: Array, 
@@ -331,6 +324,31 @@ def inpsection_region_reveal(inspection_time: float,
     region_indicies = vmap(lambda point: ((point < regions.reshape(-1)).argmax() % 2).astype(bool))(x_time[:,1])
     
     return Dataset(X=x_time[region_indicies], y=y_time[region_indicies])
+
+
+def naive_predictor(data):
+    """
+    Get a naive predictor for the data.
+    Args:
+        train_data (Dataset): The training data.
+    Returns:
+        Array: The naive predictor.
+    """
+    x, y = data.X, data.y
+
+    indicies = x[:,0].argsort()
+
+    x = x[indicies]
+    y = y[indicies]
+
+    locations = jnp.unique(x[:,1])
+
+    return vmap(lambda loc: y[::-1][(x[::-1,1] == loc).argmax()])(locations)
+    
+
+def make_naive_predictor(train_data: Dataset, test_data: Dataset) -> Array:
+    T = jnp.unique(test_data.X[:,0])
+    return jnp.array([naive_predictor(train_data) for time in T]).reshape(-1, 1)
 
 
 def optimal_design(aquisition, posterior, variational_family, params , inspection_time, regions):

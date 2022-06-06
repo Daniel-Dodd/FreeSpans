@@ -37,16 +37,15 @@ class DriftKernel(Kernel, _DriftKernel):
         self._params = {**drift_params, **base_kernel_params}
     
     @property
-    def params(self):
+    def params(self) -> dict:
         return self._params
-        
 
     def __call__(self, x: Array, y: Array, params: dict) -> Array:
         projection_matrix = self.projection(params=params)     
         return self.base_kernel(jnp.matmul(x, projection_matrix), 
                                 jnp.matmul(y, projection_matrix), params=params)
     
-    def projection(self, params):
+    def projection(self, params) -> Array:
         """Method to compute data transformation for drift kernels."""
         
         scale = params["scale"].squeeze()

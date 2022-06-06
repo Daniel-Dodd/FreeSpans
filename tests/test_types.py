@@ -5,13 +5,15 @@ from spans.types import SpanData
 
 from gpjax.types import Dataset, verify_dataset
 
-
-@pytest.mark.parametrize("start_pipe, end_pipe", [(0., 10.), (1., 20.)])
-@pytest.mark.parametrize("start_time, end_time", [(0., 10.), (1., 20.)])
-@pytest.mark.parametrize("location_width, time_width" , [(.5, 1.), (1., .5)])
-def test_dataset(start_pipe, end_pipe, start_time, end_time, location_width, time_width):
+def test_dataset():
 
     # Create artificial x and y:
+    start_pipe = -5.
+    end_pipe = 5.
+    start_time = 0.
+    end_time = 5.
+    location_width = .5
+    time_width = 1.
     L = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
     T = jnp.arange(start_time, end_time + 1, time_width)
 

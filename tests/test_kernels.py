@@ -1,6 +1,6 @@
 import jax.numpy as jnp
 import gpjax as gpx
-
+from gpjax.parameters import initialise
 from gpjax.kernels import Kernel
 import spans
 
@@ -23,3 +23,9 @@ def test_kernel_call(base):
     assert "theta" in params["transformations"].keys()
     assert "scale" in params["transformations"].keys()
     assert kernel.params == {**drift_params, **base_params}
+
+    params, _, _, _ = initialise(kernel)
+    x, y = jnp.array([[1.0, 2.0]]), jnp.array([[0.5, 1.0]])
+    point_corr = kernel(x, y, params)
+    assert isinstance(point_corr, jnp.DeviceArray)
+    assert point_corr.shape == ()

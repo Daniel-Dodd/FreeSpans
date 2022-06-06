@@ -128,5 +128,3 @@ def test_confusion_matrix_and_metrics():
     assert class_met.fpr() == fp/(tn + tp)
     assert class_met.recall() == tp/(tp + fn)
     assert class_met.precision() == tp/(tp + fp)
-
-

@@ -43,6 +43,7 @@ def test_pred_information():
     pass
 
 def test_box_design():
+    #spans.optimal_design.box_design
     pass
 
 def test_inspection_region_design():

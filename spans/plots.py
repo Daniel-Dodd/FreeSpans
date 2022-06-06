@@ -3,9 +3,77 @@ from typing import List, Optional
 from sklearn.metrics import roc_curve, precision_recall_curve
 
 from .utils import ClassifierMetrics, Scaler
-from .types import SpanData, Array
+from .types import SpanData, SimulatedSpanData, Array
 from gpjax import Dataset
 import jax.numpy as jnp
+from jax import vmap
+
+# THIS FILE IS CURRENTLY A MESS.
+
+def visualise(data: SpanData):
+    """
+    Visualise span datasets.
+    Args:
+        data (SpanData): The data to visualise.
+    Returns:
+        Plot.
+    """
+    if isinstance(data, SimulatedSpanData):
+        return _visualise_simulated_data(data)
+    else:
+        return _visualise_real_data(data)
+
+def _visualise_real_data(data: SpanData):
+    """Visualise span dataset."""
+    plt.figure(figsize=(6, 3), constrained_layout=True)
+    XX, YY = jnp.meshgrid(data.T, data.L)
+    plt.ylabel("Year")
+    plt.xlabel("Pipe KP (km)")
+
+    if all((data.y == 1.) + (data.y == 0.)):
+        if data.n < data.nt * data.nl:
+            print("Missing data!")
+            Xplot = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(data.L))(data.T).reshape(-1, 2)
+            indicies = vmap(lambda x: (Xplot == x).all(axis=1).argmax(), in_axes=0)(data.X)
+            yplot = -1. * jnp.ones((data.nt * data.nl, 1)) # -1. is for missing data
+            yplot = yplot.at[indicies].set(data.y)
+            plt.contourf(YY, XX, yplot.reshape(data.nt, data.nl).T, levels=1, colors=['red','none', 'black'])
+        else:
+            plt.contourf(YY, XX, data.y.reshape(data.nt, data.nl).T, levels=1, colors=['none', 'black'])
+    else:
+        plt.contourf(YY, XX, data.y.reshape(data.nt, data.nl).T, levels=10)
+        plt.colorbar()
+
+    plt.yticks(jnp.arange(int(data.T.min()), int(data.T.max()) + 1, step=1))
+
+def _visualise_simulated_data(data: SpanData):
+    """Visualise span dataset."""
+    plt.figure(figsize=(12,4))
+    XX, YY = jnp.meshgrid(data.T, data.L)
+
+    plt.subplot(1,2,1)
+    plt.title('Observations')
+    plt.ylabel("Time")
+    plt.xlabel("Pipe")
+    plt.yticks(jnp.arange(int(data.T.min()), int(data.T.max()) + 1, step=1))
+
+    if all((data.y == 1.) + (data.y == 0.)):
+        plt.contourf(YY, XX, data.y.reshape(data.nt, data.nl).T, levels=1, colors=['none', 'black'])
+    else:
+        plt.contourf(YY, XX, data.y.reshape(data.nt, data.nl).T, levels=10)
+        plt.colorbar()
+
+    plt.subplot(1,2,2)
+    plt.title('Seabed')
+    plt.ylabel("Time")
+    plt.xlabel("Pipe")
+    plt.contourf(YY,XX, data.f.reshape(data.nt, data.nl).T, levels=10)
+    plt.colorbar()
+    plt.yticks(jnp.arange(int(data.T.min()), int(data.T.max()) + 1, step=1))
+
+    plt.tight_layout()
+
+
 
 def plot_rocpr(truth: SpanData, 
                  preds: List[Array], 
@@ -31,7 +99,8 @@ def plot_rocpr(truth: SpanData,
     
     if year is not None:
         if naive is not None:
-            naive = truth.y_as_ts[year - 1 - truth.T.min()]
+            truth_y_as_ts = truth.y.reshape(truth.nt, truth.nl)
+            naive = truth_y_as_ts[year - 1 - truth.T.min()]
         
         def get_year(vals: Array) -> Array:
             return vals.reshape(truth.nt, truth.nl)[year - truth.T.min()]

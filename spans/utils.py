@@ -113,3 +113,16 @@ def confusion_matrix(true_labels: Array, pred_labels: Array) -> Array:
         (true_labels, pred_labels)
         )
     return cm
+
+# TO DO: sort this function out.
+# def drift(self, units: int) -> "SpanData":
+#     """Data drifter shifts data in positive direction (TO DO: negative direction)."""
+#     if units<1:
+#         return self
+#     else:
+#         y = self.y_as_ts
+  
+#     for i in range(1, self.nt):
+#         y = y.at[i, :].set(list([0.0] * units * i + list(y[i][: - i * jnp.abs(units)])))
+    
+#     return SpanData(X=self.X, y = y.reshape(-1,1), L=self.L, T=self.T)

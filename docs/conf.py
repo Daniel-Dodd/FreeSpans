@@ -56,7 +56,7 @@ copyright = "2022, Daniel Dodd"
 author = "Daniel Dodd"
 
 # The full version, including alpha/beta/rc tags
-version = find_version("spans", "__init__.py")
+version = find_version("freespans", "__init__.py")
 release = version
 
 

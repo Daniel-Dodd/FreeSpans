@@ -7,6 +7,7 @@ from gpjax.config import Softplus, add_parameter
 
 from chex import dataclass
 import distrax as dx
+import gpjax as gpx
 
 import pytest
 
@@ -28,6 +29,23 @@ def dataset():
 
     return D
 
+def variational_family_and_posterior():
+    D = dataset()
+    kernel = gpx.RBF()
+    prior = gpx.Prior(kernel=kernel)
+    likelihood = gpx.Bernoulli(num_datapoints = D.n)
+
+    p = prior * likelihood
+
+    Lz = jnp.linspace(-1, 1, 4)
+    Tz = jnp.linspace(-5, 5, 5)
+
+    z = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(Lz))(Tz).reshape(-1, 2)
+    q = gpx.VariationalGaussian(prior=prior, inducing_inputs=z)
+
+    return  p, q
+
+
 
 def test_compute_percentages():
     D = dataset()
@@ -37,10 +55,61 @@ def test_compute_percentages():
     assert percentage.dtype == jnp.float32 or jnp.float64
 
 def test_pred_entropy():
-    pass
+    p, q =  variational_family_and_posterior()
+
+    # Create pipe locations and time indicies:
+    Ld = jnp.linspace(-2, 2, 10)
+    Td = jnp.linspace(-1, 1, 5)
+    
+    # Create design locations and time indicies:
+    d = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(Ld))(Td).reshape(-1, 2)
+
+    svgp = gpx.StochasticVI(posterior=p, variational_family = q)
+    params =  svgp.params
+
+    entropy = freespans.pred_entropy(posterior=p,
+	                variational_family=q,
+	                 params = params,
+	                 design = d, 
+	                 inner_samples=32, 
+	                 outer_samples=16,
+	                 seed=42,
+	                )
+
+    assert entropy.shape == ()
+    assert entropy.dtype == jnp.float32 or jnp.float64 or float
  
 def test_pred_information():
-    pass
+    p, q =  variational_family_and_posterior()
+
+    
+
+    # Create design locations and time indicies:
+    Ld = jnp.linspace(-2, 2, 10)
+    Td = jnp.linspace(-1, 1, 5)
+    d = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(Ld))(Td).reshape(-1, 2)
+
+    # Create test locations and time indicies:
+    Lt = jnp.linspace(1, 2, 3)
+    Tt = jnp.linspace(4, 5, 2)
+    t = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(Lt))(Tt).reshape(-1, 2)
+
+    svgp = gpx.StochasticVI(posterior=p, variational_family = q)
+
+    params =  svgp.params
+
+    information = freespans.pred_information(posterior=p,
+	                variational_family=q,
+	                 params = params,
+	                 design = d, 
+                     test = t,
+	                 inner_samples=32, 
+	                 outer_samples=16,
+	                 seed=42,
+	                )
+
+    assert information.shape == ()
+    assert information.dtype == jnp.float32 or jnp.float64 or float
 
 def test_box_design():
     #spans.optimal_design.box_design

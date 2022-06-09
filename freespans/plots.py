@@ -235,7 +235,7 @@ def plot_elbo(history: Array, plot_step: Optional[int] = 10):
     total_iterations = elbo_history.shape[0]
     iterations = jnp.arange(1, total_iterations + 1)
 
-    plt.figure(constrained_layout = True)
-    plt.plot(iterations[::plot_step], elbo_history[::plot_step])
-    plt.ylabel("ELBO")
-    plt.xlabel("Iterations")
+    fig, ax = plt.subplots()
+    ax.plot(iterations[::plot_step], elbo_history[::plot_step])
+    ax.set_ylabel("ELBO")
+    ax.set_xlabel("Iterations")

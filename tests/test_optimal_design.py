@@ -1,11 +1,5 @@
 import jax.numpy as jnp
-from typing import Optional
 
-from gpjax.types import Array
-from gpjax.kernels import Kernel
-from gpjax.config import Softplus, add_parameter
-
-from chex import dataclass
 import distrax as dx
 import gpjax as gpx
 
@@ -111,12 +105,35 @@ def test_pred_information():
     assert information.shape == ()
     assert information.dtype == jnp.float32 or jnp.float64 or float
 
-def test_box_design():
-    #spans.optimal_design.box_design
-    pass
+@pytest.mark.parametrize("start_pipe, end_pipe", [(0., 1.), (2., 4.7)])
+@pytest.mark.parametrize("start_time, end_time", [(0., 1.), (2., 4.7)])
+@pytest.mark.parametrize("location_width, time_width", [(.1, .1), (.2, .2)])
+def test_box_design(start_time, end_time, start_pipe, end_pipe, time_width, location_width):
+    L = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
+    T = jnp.arange(start_time, end_time + time_width/2, time_width)
 
-def test_inspection_region_design():
-    pass
+    d = freespans.box_design(start_time, end_time, start_pipe, end_pipe, time_width, location_width)
+
+    assert d.shape == (len(T)*len(L), 2)
+    assert d.dtype == jnp.float32 or jnp.float64
+    assert d[:,0].min() >= start_time
+    assert d[:,0].max() <= end_time + 1e-8
+    assert d[:,1].min() >= start_pipe
+    assert d[:,1].max() <= end_pipe + 1e-8
+
+
+@pytest.mark.parametrize("regions", [jnp.array([[1., 2.]]), jnp.array([[1., 2.], [3., 4.]])])
+def test_inspection_region_design(regions):
+    inspection_time = 0.
+    location_width = 1.
+
+    d = freespans.inspection_region_design(inspection_time, regions, location_width)
+    assert d.shape[1] == 2
+    assert (d[:,0] == inspection_time).all()
+    assert d[:,1].min() >= regions.flatten().min()
+    assert d[:,1].max() <= regions.flatten().max()
+
+    
 
 def test_at_reveal():
     pass
@@ -133,13 +150,16 @@ def test_box_reveal():
 def test_region_reveal():
     pass
 
+def test_inspection_region_reveal():
+    D = dataset()
+    pass
+
+
 def test_naive_predictor():
+    #Combine two datasets
     pass
 
 def test_make_naive_predictor():
-    pass
-
-def test_inspection_region_reveal():
     pass
 
 def test_optimal_design():

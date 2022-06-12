@@ -179,7 +179,7 @@ def box_design(start_time: int,
 
     # Create pipe locations and time indicies:
     L = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
-    T = jnp.arange(start_time, end_time + 1, time_width)
+    T = jnp.arange(start_time, end_time + time_width/2, time_width)
     
     return vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
 

@@ -41,7 +41,7 @@ def simulate_bernoulli(kernel: Kernel,
 
     # Create pipe locations and time indicies:
     L = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
-    T = jnp.arange(start_time, end_time + 1, time_width)
+    T = jnp.arange(start_time, end_time + time_width/2, time_width)
     
     # Create covariates:
     X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
@@ -93,7 +93,7 @@ def simulate_indicator(kernel: Kernel,
 
     # Create pipe locations and time indicies:
     L = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
-    T = jnp.arange(start_time, end_time + 1, time_width)
+    T = jnp.arange(start_time, end_time + time_width/2, time_width)
     
     # Create covariates:
     X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
@@ -143,7 +143,7 @@ def simulate_gaussian(kernel: Kernel,
 
     # Create pipe locations and time indicies:
     L = jnp.arange(start_pipe, end_pipe, location_width) + location_width/2.
-    T = jnp.arange(start_time, end_time + 1, time_width)
+    T = jnp.arange(start_time, end_time + time_width/2, time_width)
     
     # Create covariates:
     X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)

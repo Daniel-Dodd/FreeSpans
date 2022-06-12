@@ -13,7 +13,7 @@ from freespans.simulate import simulate_bernoulli, simulate_gaussian, simulate_i
 @pytest.mark.parametrize("start_time, end_time", [(0., 3.), (1., 5.)])
 @pytest.mark.parametrize("location_width, time_width" , [(.5, 1.), (1., .5)])
 @pytest.mark.parametrize("simulator", [simulate_bernoulli, simulate_gaussian, simulate_indicator])
-def test_simulate_bernoulli(start_pipe, end_pipe, start_time, end_time, location_width, time_width, simulator):
+def test_simulate(start_pipe, end_pipe, start_time, end_time, location_width, time_width, simulator):
 
     kernel = gpx.RBF()
 
@@ -33,6 +33,12 @@ def test_simulate_bernoulli(start_pipe, end_pipe, start_time, end_time, location
     assert data.y.shape == (data.n, 1)
     assert data.X.dtype == jnp.float32 or jnp.float64
     assert data.y.dtype == jnp.float32 or jnp.float64
+
+	# test boundaries:
+    assert data.X[:,0].min() >= start_time
+    assert data.X[:,0].max() <= end_time
+    assert data.X[:,1].min() >= start_pipe
+    assert data.X[:,1].max() <= end_pipe
 
     # test scaler.
     scaler = Scaler()

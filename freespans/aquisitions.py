@@ -34,7 +34,7 @@ class Aquisition:
 class PredictiveAquisition:
     """Abstract predictive aquisition function class."""
 
-    likelihood: AbstractLikelihood
+    design_likelihood: AbstractLikelihood
 
 
 @dataclass
@@ -53,7 +53,7 @@ class NestedMonteCarlo:
 
 @dataclass
 class PredictiveEntropy(NestedMonteCarlo, Aquisition, PredictiveAquisition):
-    """Compute predictive entropy of labels under the likelihood via nested Monte Carlo (NMC).
+    """Compute predictive entropy of labels under the design likelihood via nested Monte Carlo (NMC).
 
         i.e., we compute the integral - ∫ [∫p(y|f, d) q(f|d) df] log([∫p(y|f, d) q(f|d) df]) dy
     """
@@ -79,13 +79,13 @@ class PredictiveEntropy(NestedMonteCarlo, Aquisition, PredictiveAquisition):
 
         # Outer samples.
         fn_samples = fd.sample(seed=key1, sample_shape=(n,))
-        yn_samples = self.likelihood.link_function(fn_samples, params).sample(seed=key2)
+        yn_samples = self.design_likelihood.link_function(fn_samples, params).sample(seed=key2)
 
         # Inner samples.
         fnm_samples = fd.sample(seed=key3, sample_shape=(n,m))
 
         # Entropy calculation H[y].
-        pnm_dist = self.likelihood.link_function(fnm_samples, params)
+        pnm_dist = self.design_likelihood.link_function(fnm_samples, params)
         pnm_prob = pnm_dist.prob(yn_samples[:, None, :])
 
         prob_sum = jnp.sum(jnp.log(pnm_prob), axis=2)
@@ -104,10 +104,14 @@ class PredictiveInformation(NestedMonteCarlo, Aquisition, PredictiveAquisition):
                                                                 [∫p(y_d|f, d) q(f|d) df][∫p(y_t|f, t) q(f|t) df]) d[y_d, y_t]
     """
     test_likelihood: Optional[AbstractLikelihood] = None
+    joint_likelihood: Optional[AbstractLikelihood] = None
 
     def __post_init__(self):
         if self.test_likelihood is None:
-            self.test_likelihood = self.likelihood
+            self.test_likelihood = self.design_likelihood
+
+        if self.joint_likelihood is None:
+            self.joint_likelihood = self.design_likelihood
 
     def evaluate(self, params: dict, design: Array, test: Array,  *args: Any, **kwargs: Any) -> float:
         """Evaluate mutual information.
@@ -123,6 +127,7 @@ class PredictiveInformation(NestedMonteCarlo, Aquisition, PredictiveAquisition):
         d = design
         t = test
         dt = jnp.concatenate([d, t])
+        nd = d.shape[0]
 
         key = jr.PRNGKey(self.seed)
 
@@ -134,7 +139,7 @@ class PredictiveInformation(NestedMonteCarlo, Aquisition, PredictiveAquisition):
 
         # Outer samples.
         fdt_n_samples = fdt.sample(seed=key1, sample_shape=(n,))
-        ydt_n_samples = self.likelihood.link_function(fdt_n_samples, params).sample(seed=key2)
+        ydt_n_samples = self.joint_likelihood.link_function(fdt_n_samples, params).sample(seed=key2)
         yd_n_samples = ydt_n_samples[:,:d.shape[0]]
         yt_n_samples = ydt_n_samples[:,d.shape[0]:]
 
@@ -144,7 +149,7 @@ class PredictiveInformation(NestedMonteCarlo, Aquisition, PredictiveAquisition):
         ft_nm_samples = ft.sample(seed=key3, sample_shape=(n,m))
 
         # Entropy calculation H[y_d, y_t].
-        pdt_nm_dist = self.likelihood.link_function(fdt_nm_samples, params)
+        pdt_nm_dist = self.design_likelihood.link_function(fdt_nm_samples, params)
         pdt_nm_prob = pdt_nm_dist.prob(ydt_n_samples[:, None, :])
 
         prob_sum = jnp.sum(jnp.log(pdt_nm_prob), axis=2)
@@ -155,7 +160,7 @@ class PredictiveInformation(NestedMonteCarlo, Aquisition, PredictiveAquisition):
         Hdt = jnp.mean(jnp.log(m) - prob_max - log_exp_sum)
 
         # Entropy calculation H[y_d].
-        pd_nm_dist = self.likelihood.link_function(fd_nm_samples, params)
+        pd_nm_dist = self.design_likelihood.link_function(fd_nm_samples, params)
         pd_nm_prob = pd_nm_dist.prob(yd_n_samples[:, None, :])
 
         prob_sum = jnp.sum(jnp.log(pd_nm_prob), axis=2)

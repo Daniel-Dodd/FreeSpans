@@ -54,7 +54,7 @@ def test_pred_entropy():
 
 
     entropy_fn = freespans.aquisitions.PredictiveEntropy(model=q, 
-                                                    likelihood = p.likelihood, 
+                                                    design_likelihood = p.likelihood, 
                                                     inner_samples=32, 
                                                     outer_samples=16, 
                                                     seed=42,
@@ -85,7 +85,7 @@ def test_pred_information():
     params =  svgp.params
 
     information_fn = freespans.aquisitions.PredictiveInformation(model=q, 
-                                                    likelihood = p.likelihood, 
+                                                    design_likelihood= p.likelihood, 
                                                     inner_samples=32, 
                                                     outer_samples=16, 
                                                     seed=42,

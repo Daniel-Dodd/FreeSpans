@@ -15,7 +15,6 @@ You can view the source code for FreeSpans `here on Github <https://github.com/d
     :caption: Getting Started
 
     installation
-    design
 
 .. toctree::
     :maxdepth: 1

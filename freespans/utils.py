@@ -159,8 +159,3 @@ def naive_predictor(data):
     locations = jnp.unique(x[:,1])
 
     return vmap(lambda loc: y[::-1][(x[::-1,1] == loc).argmax()])(locations)
-    
-
-def make_naive_predictor(train_data: Dataset, test_data: Dataset) -> Array:
-    T = jnp.unique(test_data.X[:,0])
-    return jnp.array([naive_predictor(train_data) for time in T]).reshape(-1, 1)

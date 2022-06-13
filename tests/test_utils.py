@@ -130,6 +130,8 @@ def test_confusion_matrix_and_metrics():
     assert class_met.recall() == tp/(tp + fn)
     assert class_met.precision() == tp/(tp + fp)
 
+
+
 def dataset():
     # Create pipe locations and time indicies:
     L = jnp.linspace(-1, 1, 10)
@@ -145,6 +147,33 @@ def dataset():
     return D
 
 
+def dataset1():
+    # Create pipe locations and time indicies:
+    L = jnp.arange(0, 20, 1.)
+    t = 1.
+    
+    # Create covariates:
+    X = vmap(lambda l: jnp.array([t,l]))(L).reshape(-1, 2)
+
+    # Create labels
+    y = jnp.zeros_like(X[:,0]).reshape(-1, 1)
+    D = gpx.Dataset(X=X, y=y)
+
+    return D
+
+def dataset2():
+    # Create pipe locations and time indicies:
+    L = jnp.arange(5, 10, 1.)
+    t = 2.
+    
+    # Create covariates:
+    X = vmap(lambda l: jnp.array([t,l]))(L).reshape(-1, 2)
+
+    # Create labels
+    y = jnp.ones_like(X[:,0]).reshape(-1, 1)
+    D = gpx.Dataset(X=X, y=y)
+
+    return D
 
 def test_compute_percentages():
     D = dataset()
@@ -154,8 +183,17 @@ def test_compute_percentages():
     assert percentage.dtype == jnp.float32 or jnp.float64
 
 def test_naive_predictor():
-    #Combine two datasets
-    pass
+    D1 = dataset1()
+    D2 = dataset2()
 
-def test_make_naive_predictor():
-    pass
+    # combine datasets:
+    D = freespans.combine(D1, D2)
+
+    # test naive predictor:
+    naive_predictor = freespans.naive_predictor(D)
+
+    assert naive_predictor.shape == (20, 1)
+    assert naive_predictor.dtype == jnp.float32 or jnp.float64
+    assert (naive_predictor[:5] == jnp.array([0., 0., 0., 0., 0.])).all()
+    assert (naive_predictor[5:10] == jnp.array([1., 1., 1., 1., 1.])).all()
+    assert (naive_predictor[10:] == jnp.array([0., 0., 0., 0., 0.])).all()

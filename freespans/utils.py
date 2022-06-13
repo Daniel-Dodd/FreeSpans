@@ -1,12 +1,14 @@
 from copy import deepcopy
 from typing import Optional, Union
-from .types import Array
+
 import jax.numpy as jnp
-from jax import lax
-
+from jax import lax, vmap
 from gpjax import Dataset
-
 from chex import dataclass
+
+from .optimal_design import region_reveal
+from .types import Array
+
 
 @dataclass(repr=False)
 class Scaler:
@@ -126,3 +128,39 @@ def confusion_matrix(true_labels: Array, pred_labels: Array) -> Array:
 #         y = y.at[i, :].set(list([0.0] * units * i + list(y[i][: - i * jnp.abs(units)])))
     
 #     return SpanData(X=self.X, y = y.reshape(-1,1), L=self.L, T=self.T)
+
+
+def compute_percentages(regions: Array, data: Dataset) -> float:
+    """Compute the percentage of spans in each region.
+    Args:
+        regions (Array): A batch of regions to inspect.
+        dataset (Dataset): The dataset to compute the percentages for.
+    Returns:
+        float: The percentage of spans in each region.
+    """
+    return jnp.mean(region_reveal(regions, data).y).squeeze()
+
+
+def naive_predictor(data):
+    """
+    Get a naive predictor for the data.
+    Args:
+        train_data (Dataset): The training data.
+    Returns:
+        Array: The naive predictor.
+    """
+    x, y = data.X, data.y
+
+    indicies = x[:,0].argsort()
+
+    x = x[indicies]
+    y = y[indicies]
+
+    locations = jnp.unique(x[:,1])
+
+    return vmap(lambda loc: y[::-1][(x[::-1,1] == loc).argmax()])(locations)
+    
+
+def make_naive_predictor(train_data: Dataset, test_data: Dataset) -> Array:
+    T = jnp.unique(test_data.X[:,0])
+    return jnp.array([naive_predictor(train_data) for time in T]).reshape(-1, 1)

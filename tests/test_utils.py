@@ -1,5 +1,6 @@
 import jax.numpy as jnp
-
+from jax import vmap
+import gpjax as gpx
 from gpjax import Dataset
 
 import freespans
@@ -128,3 +129,33 @@ def test_confusion_matrix_and_metrics():
     assert class_met.fpr() == fp/(tn + tp)
     assert class_met.recall() == tp/(tp + fn)
     assert class_met.precision() == tp/(tp + fp)
+
+def dataset():
+    # Create pipe locations and time indicies:
+    L = jnp.linspace(-1, 1, 10)
+    T = jnp.linspace(-5, 5, 20)
+    
+    # Create covariates:
+    X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
+
+    # Create labels
+    y = (jnp.sin(jnp.linspace(-jnp.pi/2, jnp.pi/2, 10*20)) < 0).astype(jnp.float32).reshape(-1, 1)
+    D = gpx.Dataset(X=X, y=y)
+
+    return D
+
+
+
+def test_compute_percentages():
+    D = dataset()
+    regions = jnp.array([[-.5, 0.], [.5, 1.5]])
+    percentage = freespans.compute_percentages(regions, D)
+    assert percentage.shape == ()
+    assert percentage.dtype == jnp.float32 or jnp.float64
+
+def test_naive_predictor():
+    #Combine two datasets
+    pass
+
+def test_make_naive_predictor():
+    pass

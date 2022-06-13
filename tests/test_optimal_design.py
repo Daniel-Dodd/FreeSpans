@@ -37,15 +37,6 @@ def variational_family_and_posterior():
 
     return  p, q
 
-
-
-def test_compute_percentages():
-    D = dataset()
-    regions = jnp.array([[-.5, 0.], [.5, 1.5]])
-    percentage = freespans.optimal_design.compute_percentages(regions, D)
-    assert percentage.shape == ()
-    assert percentage.dtype == jnp.float32 or jnp.float64
-
 def test_pred_entropy():
     p, q =  variational_family_and_posterior()
 
@@ -161,22 +152,14 @@ def test_after_reveal():
 def test_box_reveal():
     pass
 
-@pytest.mark.parametrize("regions", [jnp.array([[0., .5]]), jnp.array([[-1., 0.], [.5, 1.]])])
+#@pytest.mark.parametrize("regions", [jnp.array([[0., .5]]), jnp.array([[-1., 0.], [.5, 1.]])])
 def test_region_reveal():
     D = dataset()
     pass
 
-@pytest.mark.parametrize("regions", [jnp.array([[0., .5]]), jnp.array([[-1., 0.], [.5, 1.]])])
+#@pytest.mark.parametrize("regions", [jnp.array([[0., .5]]), jnp.array([[-1., 0.], [.5, 1.]])])
 def test_inspection_region_reveal():
     D = dataset()
-    pass
-
-
-def test_naive_predictor():
-    #Combine two datasets
-    pass
-
-def test_make_naive_predictor():
     pass
 
 def test_optimal_design():

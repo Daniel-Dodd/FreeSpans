@@ -1,12 +1,10 @@
 import jax.numpy as jnp
 
-import distrax as dx
-import gpjax as gpx
-
 import pytest
 
 from jax import vmap
 import gpjax as gpx
+from gpjax import Dataset
 import freespans
 
 def dataset():
@@ -136,20 +134,39 @@ def test_inspection_region_design(regions):
     
 
 def test_at_reveal():
-    pass
+    D = dataset()
+    time = 5
+    D_reveal = freespans.optimal_design.at_reveal(time, D)
+    assert D_reveal.X.shape[1] == 2
+    assert (D_reveal.X[:,0] == time).all()
+    assert isinstance(D, Dataset)
+
 
 def test_before_reveal():
-    pass
+    D = dataset()
+    time = 3
+    D_reveal = freespans.optimal_design.before_reveal(time, D)
+    assert D_reveal.X.shape[1] == 2
+    assert (D_reveal.X[:,0] <= time).all()
+    assert isinstance(D, Dataset)
 
 def test_after_reveal():
-    pass
+    D = dataset()
+    time = 3
+    D_reveal = freespans.optimal_design.after_reveal(time, D)
+    assert D_reveal.X.shape[1] == 2
+    assert (D_reveal.X[:,0] >= time).all()
+    assert isinstance(D, Dataset)
 
 def test_box_reveal():
     pass
 
+@pytest.mark.parametrize("regions", [jnp.array([[0., .5]]), jnp.array([[-1., 0.], [.5, 1.]])])
 def test_region_reveal():
+    D = dataset()
     pass
 
+@pytest.mark.parametrize("regions", [jnp.array([[0., .5]]), jnp.array([[-1., 0.], [.5, 1.]])])
 def test_inspection_region_reveal():
     D = dataset()
     pass

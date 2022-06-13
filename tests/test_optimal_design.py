@@ -23,6 +23,16 @@ def dataset():
 
     return D
 
+@pytest.mark.parametrize("start_time, end_time, start_pipe, end_pipe", [(0, 1, 0, 1), (-1, 1, 0, 1)])
+def test_box_design(start_time, end_time, start_pipe, end_pipe):
+
+    X = freespans.optimal_design.box_design(start_time, end_time, start_pipe, end_pipe)
+    assert X.shape[1] == 2
+    assert (X[:,0] >= start_time - 1e-8).all() 
+    assert (X[:,0] <= end_time + 1e-8).all() 
+    assert (X[:,1] >= start_pipe - 1e-8).all() 
+    assert (X[:,1] <= end_pipe + 1e-8).all()
+
 
 @pytest.mark.parametrize("regions", [jnp.array([[1., 2.]]), jnp.array([[1., 2.], [3., 4.]])])
 def test_inspection_region_design(regions):

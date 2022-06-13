@@ -25,7 +25,7 @@ You can view the source code for FreeSpans `here on Github <https://github.com/d
 
 .. toctree::
     :maxdepth: 1
-    :caption: Package Reference
+    :caption: API
 
     api
 

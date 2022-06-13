@@ -52,17 +52,6 @@ def test_scaler_and_scaler_dataset(start_pipe, end_pipe, start_time, end_time, l
     assert isinstance(D1_scaled, Dataset)
     assert isinstance(D2_scaled, Dataset)
 
-def test_combine():
-    D1 = Dataset(X=jnp.array([[0, 0], [1, 1]]), y=jnp.array([[1], [2]]))
-    D2 = Dataset(X=jnp.array([[2, 2], [3, 3]]), y=jnp.array([[3], [4]]))
-
-    D_combined = freespans.combine(D1, D2)
-
-    assert D_combined.X.shape == (D1.X.shape[0] + D2.X.shape[0], D1.X.shape[1])
-    assert D_combined.y.shape == (D1.y.shape[0] + D2.y.shape[0], D1.y.shape[1])
-    assert (D_combined.X == jnp.concatenate([D1.X, D2.X], axis=0)).all()
-    assert (D_combined.y == jnp.concatenate([D1.y, D2.y], axis=0)).all()
-
 def test_confusion_matrix_and_metrics():
     # test 1:
     pred = jnp.array([1.,1., 0., 1., 1., 0., 1.])
@@ -187,7 +176,7 @@ def test_naive_predictor():
     D2 = dataset2()
 
     # combine datasets:
-    D = freespans.combine(D1, D2)
+    D = D1 + D2
 
     # test naive predictor:
     naive_predictor = freespans.naive_predictor(D)

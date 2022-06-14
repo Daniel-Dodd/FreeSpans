@@ -15,6 +15,19 @@ class SpanData(Dataset):
     L: Optional[Array] = None
     T: Optional[Array] = None
 
+    def __add__(self, other: 'SpanData') -> 'SpanData':
+        """Add two datasets together."""
+        x = jnp.concatenate((self.X, other.X))
+        y = jnp.concatenate((self.y, other.y))
+
+        if (self.L is not None) & (other.L is not None) & (self.T is not None) & (other.T is not None):
+            L = jnp.unique(jnp.concatenate((self.L, other.L)))
+            T = jnp.unique(jnp.concatenate((self.T, other.T)))
+            return SpanData(X=x, y=y, L=L, T=T)
+
+        else:
+            return SpanData(X=x, y=y)
+
     def __post_init__(self):
         if self.L is None and self.T is None:
             self.L = jnp.unique(self.X[:,1])
@@ -42,3 +55,17 @@ class SpanData(Dataset):
 class SimulatedSpanData(SpanData):
     """Span dataset class for artificial data."""
     f: Optional[Array] = None
+
+    def __add__(self, other: 'SpanData') -> 'SpanData':
+        """Add two datasets together."""
+        x = jnp.concatenate((self.X, other.X))
+        y = jnp.concatenate((self.y, other.y))
+        f = jnp.concatenate((self.f, other.f))
+
+        if (self.L is not None) & (other.L is not None) & (self.T is not None) & (other.T is not None):
+            L = jnp.unique(jnp.concatenate((self.L, other.L)))
+            T = jnp.unique(jnp.concatenate((self.T, other.T)))
+            return SimulatedSpanData(X=x, y=y, L=L, T=T, f=f)
+
+        else:
+            return SimulatedSpanData(X=x, y=y, f=f)

@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 from sklearn.metrics import roc_curve, precision_recall_curve, auc, average_precision_score
 
-from .utils import ClassifierMetrics, Scaler
+from .utils import ClassifierMetrics, Scaler #, naive_predictor
 from .types import SpanData, SimulatedSpanData, Array
+from .predict import naive_predictor
 from gpjax import Dataset
 import jax.numpy as jnp
 from jax import vmap, lax
@@ -45,7 +46,7 @@ def _make_grid(data: SpanData, val: Array) -> Array:
     if n < nl*nt:
         xpl = vmap(lambda t: vmap(lambda l: jnp.array([t, l]))(L))(T).reshape(-1, 2)
         
-        def f(carry, xi): 
+        def f(_, xi): 
             return None, (xpl == xi).all(axis=1)
     
         _, res = lax.scan(f, None, x) 
@@ -122,7 +123,7 @@ def _plot_binary(data: SpanData):
     plt.tight_layout()
 
 
-def _plot_truth(data: SpanData):
+def _plot_truth(data: SpanData, plot_binary: bool):
     """
     Plot the true data.
     Args:
@@ -130,12 +131,12 @@ def _plot_truth(data: SpanData):
     Returns:
         Plot.
     """
-    if ((data.y==0.) | data.y==1.).all():
+    if plot_binary == True:
         _plot_binary(data)
     else:
         _plot_continuous(data)
 
-def visualise(data: SpanData, latent: Optional[bool] = False, drift_angle: Optional[Array] = None, drift_scaler: Optional[Scaler] = None):
+def visualise(data: SpanData, plot_binary: Optional[int] = True, latent: Optional[bool] = False, drift_angle: Optional[Array] = None, drift_scaler: Optional[Scaler] = None):
     """
     Visualise the data.
     Args:
@@ -154,24 +155,24 @@ def visualise(data: SpanData, latent: Optional[bool] = False, drift_angle: Optio
         else:
             raise ValueError("No latent variables to visualise.")
     else:
-        _plot_truth(data)
+        _plot_truth(data, plot_binary)
 
     # Add drift angle if provided.
     if drift_angle is not None:
         Lmax = data.L.max()
         Lmin = data.L.min()
 
-    L = jnp.linspace(Lmin, Lmax, 200.)
-    
-    if drift_scaler is not None:
-        L_scaled = (L - drift_scaler.mu[1])/drift_scaler.sigma[1]
-        T_scaled = jnp.tan(drift_angle) * L_scaled
-        T = drift_scaler.mu[0] + T_scaled * drift_scaler.sigma[0]
-    else:
-        T = jnp.tan(drift_angle) * L
+        L = jnp.linspace(Lmin, Lmax, 200.)
+        
+        if drift_scaler is not None:
+            L_scaled = (L - drift_scaler.mu[1])/drift_scaler.sigma[1]
+            T_scaled = jnp.tan(drift_angle) * L_scaled
+            T = drift_scaler.mu[0] + T_scaled * drift_scaler.sigma[0]
+        else:
+            T = jnp.tan(drift_angle) * L
 
-    plt.plot(L, T, color="red")
-    plt.set_ylim(Lmin, Lmax)
+        plt.plot(L, T, color="red")
+        plt.set_ylim(Lmin, Lmax)
 
 
 def plot_roc(pred_data: Dataset, test_data: Dataset, ax = None, name: str = None):
@@ -228,7 +229,8 @@ def plot_naive_roc(naive_data: Dataset, test_data: Dataset, ax=None):
     if ax is None:
         fig, ax = plt.subplots()
 
-    naive_metr = ClassifierMetrics(true_labels = test_data.y, pred_labels = naive)
+    naive_pred =  naive_predictor(naive_data, test_data)
+    naive_metr = ClassifierMetrics(true_labels = test_data.y, pred_labels = naive_pred.y)
     fpr, tpr = naive_metr.fpr(), naive_metr.tpr()
     plt.plot(fpr, tpr, "*", markersize=8, label = "Naive")
     ax.set_xlabel("False positive rate")
@@ -246,7 +248,8 @@ def plot_naive_pr(naive_data: Dataset, test_data: Dataset, ax=None):
     if ax is None:
         fig, ax = plt.subplots()
 
-    naive_metr = ClassifierMetrics(true_labels = test_data.y, pred_labels = naive)
+    naive_pred =  naive_predictor(naive_data, test_data)
+    naive_metr = ClassifierMetrics(true_labels = test_data.y, pred_labels = naive_pred.y)
     fpr, tpr = naive_metr.fpr(), naive_metr.tpr()
     precision, recall = naive_metr.precision(), naive_metr.recall()
     plt.plot(precision, recall, "*", markersize=8, label = "Naive")
@@ -275,5 +278,3 @@ def plot_rocpr(pred_datasets: Dict[str, Dataset], test_data: Dataset, naive_data
     ax1.legend()
     ax2.legend()
     plt.tight_layout()
-
-    

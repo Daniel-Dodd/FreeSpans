@@ -4,7 +4,6 @@ from gpjax import Dataset
 import numpy as np
 import jax.numpy as jnp
 from jax import vmap
-import matplotlib.pyplot as plt
 
 Array = Union[np.ndarray, jnp.ndarray]
 

@@ -59,10 +59,12 @@ def test_dataset():
     D1 = SpanData(X=x[:2], y=y[:2])
     D2 = SpanData(X=x[2:], y=y[2:])
     
-    D = D1 + D2
-    assert isinstance(D, Dataset)
-    assert (D.X == x).all()
-    assert (D.y == y).all()
+    Dnew = D1 + D2
+    assert isinstance(Dnew, Dataset)
+    assert (Dnew.X == x).all()
+    assert (Dnew.y == y).all()
+    assert (Dnew.L == D.L).all()
+    assert (Dnew.T == D.T).all()
 
 
 def test_simulated_dataset():

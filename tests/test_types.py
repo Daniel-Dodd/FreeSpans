@@ -56,6 +56,14 @@ def test_dataset():
     assert (D.L == L).all()
     assert (D.T == T).all()
 
+    D1 = SpanData(X=x[:2], y=y[:2])
+    D2 = SpanData(X=x[2:], y=y[2:])
+    
+    D = D1 + D2
+    assert isinstance(D, Dataset)
+    assert (D.X == x).all()
+    assert (D.y == y).all()
+    
 
 def test_simulated_dataset():
     # Create artificial x and y:

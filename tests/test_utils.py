@@ -170,19 +170,3 @@ def test_compute_percentages():
     percentage = freespans.compute_percentages(regions, D)
     assert percentage.shape == ()
     assert percentage.dtype == jnp.float32 or jnp.float64
-
-def test_naive_predictor():
-    D1 = dataset1()
-    D2 = dataset2()
-
-    # combine datasets:
-    D = D1 + D2
-
-    # test naive predictor:
-    naive_predictor = freespans.naive_predictor(D)
-
-    assert naive_predictor.shape == (20, 1)
-    assert naive_predictor.dtype == jnp.float32 or jnp.float64
-    assert (naive_predictor[:5] == jnp.array([0., 0., 0., 0., 0.])).all()
-    assert (naive_predictor[5:10] == jnp.array([1., 1., 1., 1., 1.])).all()
-    assert (naive_predictor[10:] == jnp.array([0., 0., 0., 0., 0.])).all()

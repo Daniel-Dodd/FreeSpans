@@ -3,7 +3,7 @@ from typing import Union
 
 from gpjax import Dataset
 from .types import SpanData
-
+from jax import vmap
 
 def get_naive_predictor(train_data: Union[Dataset, SpanData]) -> Union[Dataset, SpanData]:
     """

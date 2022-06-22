@@ -1,0 +1,100 @@
+from tkinter import N
+import jax.numpy as jnp
+from jax import vmap
+import gpjax as gpx
+from gpjax import Dataset
+
+import freespans
+from freespans.types import SpanData
+
+import pytest
+
+def Spandataset1():
+    # Create pipe locations and time indicies:
+    L = jnp.arange(0, 20, 1.)
+    t = 1.
+    
+    # Create covariates:
+    X = vmap(lambda l: jnp.array([t,l]))(L).reshape(-1, 2)
+
+    # Create labels
+    y = jnp.zeros_like(X[:,0]).reshape(-1, 1)
+    D = SpanData(X=X, y=y, L=L, T=jnp.array([t]))
+
+    return D
+
+def Spandataset2():
+    # Create pipe locations and time indicies:
+    L = jnp.arange(5, 10, 1.)
+    t = 2.
+    
+    # Create covariates:
+    X = vmap(lambda l: jnp.array([t,l]))(L).reshape(-1, 2)
+
+    # Create labels
+    y = jnp.ones_like(X[:,0]).reshape(-1, 1)
+    D = SpanData(X=X, y=y, L=L, T=jnp.array([t]))
+
+    return D
+
+
+@pytest.mark.parametrize("n", [1, 2, 10])
+def test_elbo(n):
+    hist = jnp.arange(n)
+
+    freespans.plots.plot_elbo(hist)
+
+
+def test_make_grid():
+    D = Spandataset1()
+    val = jnp.ones_like(D.y)
+    grid = freespans.plots._make_grid(D, val)
+
+    assert grid.shape == (D.nl, D.nt)
+
+    # test missing values
+    D.y = D.y[:5]
+    D.X = D.X[:5]
+    grid = freespans.plots._make_grid(D, D.y)
+    assert grid.shape == (D.nl, D.nt)
+
+
+def test_make_mesh():
+    D = Spandataset1()
+    XX, YY = freespans.plots._make_mesh(D)
+    assert XX.shape == (D.nl, D.nt)
+    assert YY.shape == (D.nl, D.nt)
+
+
+def test_title_labels_and_ticks():
+    pass
+
+def test_plot_latent():
+    pass
+
+def test_plot_continuous():
+    pass
+
+def test_plot_binary():
+    pass
+
+def test_plot_truth():
+    pass
+
+def test_plot_visualise():
+    pass
+
+def test_plot_roc():
+    pass
+
+def test_plot_pr():
+    pass
+
+def test_plot_naive_roc():
+    pass
+
+def test_plot_naive_pr():
+    pass
+
+def test_plot_rocpr():
+    pass

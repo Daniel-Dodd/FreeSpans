@@ -63,7 +63,7 @@ def test_dataset():
     assert isinstance(D, Dataset)
     assert (D.X == x).all()
     assert (D.y == y).all()
-    
+
 
 def test_simulated_dataset():
     # Create artificial x and y:
@@ -88,3 +88,5 @@ def test_simulated_dataset():
     D = SimulatedSpanData(X=x, y=y, L=L, T=T, f=f)
 
     assert (D.f == f).all()
+
+

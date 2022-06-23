@@ -149,7 +149,7 @@ def visualise(data: SpanData, plot_binary: Optional[int] = True, latent: Optiona
     if latent is True:
         if isinstance(data, SimulatedSpanData):
             plt.subplot(1, 2, 1)
-            _plot_truth(data)
+            _plot_truth(data, plot_binary)
             plt.subplot(1, 2, 2)
             _plot_latent(data)
         else:
@@ -162,7 +162,7 @@ def visualise(data: SpanData, plot_binary: Optional[int] = True, latent: Optiona
         Lmax = data.L.max()
         Lmin = data.L.min()
 
-        L = jnp.linspace(Lmin, Lmax, 200.)
+        L = jnp.linspace(Lmin, Lmax, 200)
         
         if drift_scaler is not None:
             L_scaled = (L - drift_scaler.mu[1])/drift_scaler.sigma[1]
@@ -172,7 +172,7 @@ def visualise(data: SpanData, plot_binary: Optional[int] = True, latent: Optiona
             T = jnp.tan(drift_angle) * L
 
         plt.plot(L, T, color="red")
-        plt.set_ylim(Lmin, Lmax)
+        plt.ylim(Lmin, Lmax)
 
 
 def plot_roc(pred_data: Dataset, test_data: Dataset, ax = None, name: str = None):
@@ -250,7 +250,6 @@ def plot_naive_pr(naive_data: Dataset, test_data: Dataset, ax=None):
 
     naive_pred =  naive_predictor(naive_data, test_data)
     naive_metr = ClassifierMetrics(true_labels = test_data.y, pred_labels = naive_pred.y)
-    fpr, tpr = naive_metr.fpr(), naive_metr.tpr()
     precision, recall = naive_metr.precision(), naive_metr.recall()
     plt.plot(precision, recall, "*", markersize=8, label = "Naive")
     ax.set_xlabel("Precision")

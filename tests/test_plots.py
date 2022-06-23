@@ -6,6 +6,7 @@ from gpjax import Dataset
 
 import freespans
 from freespans.types import SpanData
+from freespans.utils import Scaler
 
 import matplotlib.pyplot as plt
 
@@ -76,12 +77,20 @@ def test_title_labels_and_ticks():
 @pytest.mark.parametrize("D, plot_binary", 
                         [(freespans.simulate.simulate_gaussian(gpx.RBF(), 0, 3, 0, 3), False), 
                         (freespans.simulate.simulate_bernoulli(gpx.RBF(), 0, 3, 0, 3), True)])
-def test_plot_truth(D, plot_binary):
+@pytest.mark.parametrize("latent", [True, False])
+@pytest.mark.parametrize("drift", [None, 1.])
+@pytest.mark.parametrize("scale", [True, False])
+def test_plot_truth_and_visualise(D, plot_binary, latent, drift, scale):
     freespans.plots._plot_latent(D)
     freespans.plots._plot_truth(D, plot_binary=plot_binary)
 
-def test_plot_visualise():
-    pass
+    if scale:
+        scaler = Scaler()
+        D = scaler(D)
+    else:
+        scaler = None
+    freespans.plots.visualise(D, plot_binary = plot_binary, latent = latent, drift_angle = drift, drift_scaler = scaler)
+
 
 def test_plot_roc():
     pass

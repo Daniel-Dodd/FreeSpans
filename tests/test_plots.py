@@ -91,6 +91,10 @@ def test_plot_truth_and_visualise(D, plot_binary, latent, drift, scale):
         scaler = None
     freespans.plots.visualise(D, plot_binary = plot_binary, latent = latent, drift_angle = drift, drift_scaler = scaler)
 
+def test_visualise_latent_spandata():
+    D =  Spandataset1()
+    with pytest.raises(TypeError):
+        freespans.plots.visualise(D, latent = True)
 
 def test_plot_roc():
     pass
@@ -99,10 +103,23 @@ def test_plot_pr():
     pass
 
 def test_plot_naive_roc():
-    pass
+    D1 = Spandataset1()
+    D2 = Spandataset2()
+
+    freespans.plots.plot_naive_roc(D1, D2)
+
+    fig, ax = plt.subplots()
+    freespans.plots.plot_naive_roc(D1, D2, ax=ax)
+
 
 def test_plot_naive_pr():
-    pass
+    D1 = Spandataset1()
+    D2 = Spandataset2()
+
+    freespans.plots.plot_naive_pr(D1, D2)
+
+    fig, ax = plt.subplots()
+    freespans.plots.plot_naive_pr(D1, D2, ax=ax)
 
 def test_plot_rocpr():
     pass

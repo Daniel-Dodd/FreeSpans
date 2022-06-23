@@ -2,8 +2,11 @@ import jax.numpy as jnp
 from typing import Union
 
 from gpjax import Dataset
+from gpjax.types import Array
 from .types import SpanData
 from jax import vmap
+from gpjax.variational_families import AbstractVariationalFamily
+import distrax as dx
 
 def get_naive_predictor(train_data: Union[Dataset, SpanData]) -> Union[Dataset, SpanData]:
     """
@@ -33,6 +36,15 @@ def get_naive_predictor(train_data: Union[Dataset, SpanData]) -> Union[Dataset, 
 
 
 def naive_predictor(train_data: Union[Dataset, SpanData], test_data: Union[Dataset, SpanData]) -> Union[Dataset, SpanData]:
+    """ 
+    Get a naive predictor for the data.
+    Args:
+        train_data (Dataset): The training data.
+        test_data (Dataset): The test data.
+    Returns:
+        Array: The naive predictor.
+    """
+    
     naive_predictor = get_naive_predictor(train_data)
 
 
@@ -57,3 +69,64 @@ def naive_predictor(train_data: Union[Dataset, SpanData], test_data: Union[Datas
 
     else:
         return Dataset(X=x_test, y=vals)
+
+
+def variational_predict(variational_family: AbstractVariationalFamily, params: dict, test_inputs: Array, full_cov = False) -> dx.Distribution:
+    """
+    Get posterior distribution at test points for a variational family.
+    Args:
+        variational_family (AbstractVariationalFamily): The variational family.
+        params (dict): The variational family parameters.
+        test_data (Dataset): The test data.
+        full_cov (bool): Whether to use the full covariance matrix.
+    Returns:
+        dx.Distribution: The posterior distribution.
+    """
+    if full_cov:
+        dist = variational_family(params)(test_inputs)
+
+    else:
+        dist = vmap(variational_family(params))(test_inputs[:, None])
+
+        return dist
+
+def predictive_mean_and_std(posterior: AbstractVariationalFamily, variational_family: AbstractVariationalFamily, params: dict, test_inputs: Array) -> Array:
+    """
+    Get the predictive mean and standard deviation for a variational family.
+    Args:
+        posterior (AbstractVariationalFamily): The variational family.
+        variational_family (AbstractVariationalFamily): The variational family.
+        params (dict): The variational family parameters.
+        test_data (Dataset): The test data.
+    Returns:
+        Array: The predictive mean and standard deviation.
+    """
+    
+    dist = variational_predict(variational_family, params, test_inputs, full_cov = False)
+    predictive_dist = posterior.likelihood(dist, params)
+
+    predictive_mean = predictive_dist.mean().val
+    predictive_std = predictive_dist.stddev().val
+    
+    return predictive_mean, predictive_std
+
+
+def predicted_data(posterior: AbstractVariationalFamily, variational_family: AbstractVariationalFamily, params: dict, test_data: Union[Dataset, SpanData]) -> Union[Dataset, SpanData]:
+    """
+    Get the predicted data for a variational family.
+    Args:
+        posterior (AbstractVariationalFamily): The variational family.
+        variational_family (AbstractVariationalFamily): The variational family.
+        params (dict): The variational family parameters.
+        test_data (Dataset): The test data.
+    Returns:
+        Dataset: The predicted data.
+    """
+    
+    mean, _ = predictive_mean_and_std(posterior, variational_family, params, test_data.X)
+
+    if isinstance(test_data, SpanData):
+        return SpanData(X=test_data.X, y=mean, L=test_data.L, T=test_data.T)
+
+    else:
+        return Dataset(X=test_data.X, y=mean)

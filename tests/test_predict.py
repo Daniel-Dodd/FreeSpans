@@ -5,7 +5,7 @@ from gpjax import Dataset
 
 import freespans
 from freespans.types import SpanData
-
+import distrax as dx
 import pytest
 
 def Spandataset1():
@@ -147,3 +147,34 @@ def test_naive_predictor():
     assert (D.y[20:30] == Spandataset1().y[:10]).all()
     assert jnp.isnan(D.y[10:20]).all()
     assert jnp.isnan(D.y[30:40]).all()
+
+
+@pytest.mark.parametrize("D", [Spandataset1(), dataset1()])
+def test_variational_predict_stuff(D):
+
+    # Model:
+    likelihood = gpx.Bernoulli(num_datapoints=D.n)
+    prior = gpx.Prior(kernel=gpx.RBF())
+    posterior =  prior * likelihood
+    
+    # Variational family:
+    z = freespans.kmeans_init_inducing(D, 10)
+    q = gpx.WhitenedVariationalGaussian(prior=prior, inducing_inputs=z)
+
+    variational_predict = freespans.predict.variational_predict(q, q.params, D.X, full_cov=True)
+    variational_predict = freespans.predict.variational_predict(q, q.params, D.X, full_cov=False)
+
+
+    assert isinstance(variational_predict, dx.Distribution)
+
+    mean, std = freespans.predict.predictive_mean_and_std(posterior, q, q.params, D.X)
+
+    assert isinstance(mean, jnp.ndarray)
+    assert isinstance(std, jnp.ndarray)
+
+
+
+    pred_data = freespans.predict.predicted_data(posterior, q, q.params, D)
+
+    assert (pred_data.X == D.X).all()
+    assert pred_data.y.shape == D.y.shape

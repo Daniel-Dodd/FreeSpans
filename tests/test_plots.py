@@ -157,4 +157,30 @@ def test_plot_naive_pr():
 
 
 def test_plot_rocpr():
-    pass
+    D1 = Spandataset1()
+    D2 = Spandataset2()
+
+    # Model:
+    likelihood = gpx.Bernoulli(num_datapoints=D1.n)
+    prior = gpx.Prior(kernel=gpx.RBF())
+    posterior =  prior * likelihood
+    
+    # Variational family:
+    z = freespans.kmeans_init_inducing(D1, 10)
+    q = gpx.WhitenedVariationalGaussian(prior=prior, inducing_inputs=z)
+
+    # Create predicted datasets:
+    x = D1.X
+    y = q(q.params)(x).mean()
+    pred_data_1 = gpx.Dataset(X=x, y=y)
+    pred_data_2 = gpx.Dataset(X=x, y=y/2)
+    pred_datasets = {"A": pred_data_1, "B": pred_data_2}
+
+
+    freespans.plots.plot_rocpr(pred_datasets = pred_datasets, test_data = D1, naive_data = None)
+    freespans.plots.plot_rocpr(pred_datasets = pred_datasets, test_data = D1, naive_data = D2)
+
+
+
+
+

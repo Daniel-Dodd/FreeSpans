@@ -97,7 +97,24 @@ def test_visualise_latent_spandata():
         freespans.plots.visualise(D, latent = True)
 
 def test_plot_roc():
-    pass
+    # Model:
+    D =  Spandataset1()
+    likelihood = gpx.Bernoulli(num_datapoints=D.n)
+    prior = gpx.Prior(kernel=gpx.RBF())
+    posterior =  prior * likelihood
+    
+    # Variational family:
+    z = freespans.kmeans_init_inducing(D, 10)
+    q = gpx.WhitenedVariationalGaussian(prior=prior, inducing_inputs=z)
+
+    x = D.X
+    y = q(q.params)(x).mean()
+    pred_data = gpx.Dataset(X=x, y=y)
+
+    fig, ax = plt.subplots()
+    freespans.plots.plot_roc(pred_data, D, ax=None)
+    freespans.plots.plot_roc(pred_data, D, ax=ax)
+
 
 def test_plot_pr():
     pass
@@ -106,10 +123,10 @@ def test_plot_naive_roc():
     D1 = Spandataset1()
     D2 = Spandataset2()
 
-    freespans.plots.plot_naive_roc(D1, D2)
-
     fig, ax = plt.subplots()
+    freespans.plots.plot_naive_roc(D1, D2, ax=None)
     freespans.plots.plot_naive_roc(D1, D2, ax=ax)
+
 
 
 def test_plot_naive_pr():
@@ -119,6 +136,7 @@ def test_plot_naive_pr():
     freespans.plots.plot_naive_pr(D1, D2)
 
     fig, ax = plt.subplots()
+    freespans.plots.plot_naive_pr(D1, D2, ax=None)
     freespans.plots.plot_naive_pr(D1, D2, ax=ax)
 
 def test_plot_rocpr():

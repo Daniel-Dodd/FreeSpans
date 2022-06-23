@@ -7,6 +7,8 @@ from gpjax import Dataset
 import freespans
 from freespans.types import SpanData
 
+import matplotlib.pyplot as plt
+
 import pytest
 
 def Spandataset1():
@@ -67,19 +69,16 @@ def test_make_mesh():
 
 
 def test_title_labels_and_ticks():
-    pass
+    plt.plot()
+    freespans.plots._title_labels_and_ticks
 
-def test_plot_latent():
-    pass
 
-def test_plot_continuous():
-    pass
-
-def test_plot_binary():
-    pass
-
-def test_plot_truth():
-    pass
+@pytest.mark.parametrize("D, plot_binary", 
+                        [(freespans.simulate.simulate_gaussian(gpx.RBF(), 0, 3, 0, 3), False), 
+                        (freespans.simulate.simulate_bernoulli(gpx.RBF(), 0, 3, 0, 3), True)])
+def test_plot_truth(D, plot_binary):
+    freespans.plots._plot_latent(D)
+    freespans.plots._plot_truth(D, plot_binary=plot_binary)
 
 def test_plot_visualise():
     pass

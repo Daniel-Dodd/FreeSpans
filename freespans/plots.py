@@ -153,7 +153,7 @@ def visualise(data: SpanData, plot_binary: Optional[int] = True, latent: Optiona
             plt.subplot(1, 2, 2)
             _plot_latent(data)
         else:
-            raise ValueError("No latent variables to visualise.")
+            raise TypeError("No latent variables to visualise.")
     else:
         _plot_truth(data, plot_binary)
 

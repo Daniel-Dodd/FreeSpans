@@ -7,7 +7,7 @@ from gpjax import Dataset
 from chex import dataclass
 
 from .optimal_design import region_reveal
-from .types import Array
+from .types import Array, SpanData
 
 
 @dataclass(repr=False)
@@ -102,19 +102,6 @@ def confusion_matrix(true_labels: Array, pred_labels: Array) -> Array:
         )
     return cm
 
-# TO DO: sort this function out.
-# def drift(self, units: int) -> "SpanData":
-#     """Data drifter shifts data in positive direction (TO DO: negative direction)."""
-#     if units<1:
-#         return self
-#     else:
-#         y = self.y_as_ts
-  
-#     for i in range(1, self.nt):
-#         y = y.at[i, :].set(list([0.0] * units * i + list(y[i][: - i * jnp.abs(units)])))
-    
-#     return SpanData(X=self.X, y = y.reshape(-1,1), L=self.L, T=self.T)
-
 
 def compute_percentages(regions: Array, data: Dataset) -> float:
     """Compute the percentage of spans in each region.
@@ -125,23 +112,3 @@ def compute_percentages(regions: Array, data: Dataset) -> float:
         float: The percentage of spans in each region.
     """
     return jnp.mean(region_reveal(regions, data).y).squeeze()
-
-
-def naive_predictor(data):
-    """
-    Get a naive predictor for the data.
-    Args:
-        train_data (Dataset): The training data.
-    Returns:
-        Array: The naive predictor.
-    """
-    x, y = data.X, data.y
-
-    indicies = x[:,0].argsort()
-
-    x = x[indicies]
-    y = y[indicies]
-
-    locations = jnp.unique(x[:,1])
-
-    return vmap(lambda loc: y[::-1][(x[::-1,1] == loc).argmax()])(locations)

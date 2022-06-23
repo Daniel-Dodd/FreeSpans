@@ -51,11 +51,37 @@ def test_dataset():
     assert D.X.shape == (nt*nl, 2)
     assert D.y.shape == (nt*nl, 1)
     assert isinstance(D, Dataset)
+    assert isinstance(D, SpanData)
     assert D.L.shape == (nl, )
     assert D.T.shape == (nt, )
     assert (D.L == L).all()
     assert (D.T == T).all()
 
+    D1 = SpanData(X=x[:2], y=y[:2])
+    D2 = SpanData(X=x[2:], y=y[2:])
+
+    Dnew = D1 + D2
+    assert isinstance(Dnew, SpanData)
+    assert (Dnew.X == x).all()
+    assert (Dnew.y == y).all()
+    assert (Dnew.L == D.L).all()
+    assert (Dnew.T == D.T).all()
+
+
+    D1.L = None
+    D1.T = None
+    D2.L = None
+    D2.T = None
+
+    Dnew = D1 + D2
+    assert isinstance(Dnew, SpanData)
+    assert (Dnew.X == x).all()
+    assert (Dnew.y == y).all()
+    assert (Dnew.L == D.L).all()
+    assert (Dnew.T == D.T).all()
+
+
+    
 
 def test_simulated_dataset():
     # Create artificial x and y:
@@ -80,3 +106,31 @@ def test_simulated_dataset():
     D = SimulatedSpanData(X=x, y=y, L=L, T=T, f=f)
 
     assert (D.f == f).all()
+    assert isinstance(D, Dataset)
+    assert isinstance(D, SimulatedSpanData)
+
+    D1 = SimulatedSpanData(X=x[:2], y=y[:2], f=f[:2])
+    D2 = SimulatedSpanData(X=x[2:], y=y[2:], f=f[2:])
+
+    Dnew = D1 + D2
+    assert isinstance(Dnew, SimulatedSpanData)
+    assert (Dnew.X == x).all()
+    assert (Dnew.y == y).all()
+    assert (Dnew.L == D.L).all()
+    assert (Dnew.T == D.T).all()
+
+
+    D1.L = None
+    D1.T = None
+    D2.L = None
+    D2.T = None
+
+    Dnew = D1 + D2
+    assert isinstance(Dnew, SimulatedSpanData)
+    assert (Dnew.X == x).all()
+    assert (Dnew.y == y).all()
+    assert (Dnew.L == D.L).all()
+    assert (Dnew.T == D.T).all()
+    
+
+

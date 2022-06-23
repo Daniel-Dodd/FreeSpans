@@ -36,6 +36,21 @@ def Spandataset2():
 
     return D
 
+def Spandataset3():
+    # Create pipe locations and time indicies:
+    L = jnp.arange(10, 30, 1.)
+    T = jnp.arange(2, 4, 1.)
+    
+    # Create covariates:
+    X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
+
+    # Create labels
+    y = jnp.ones_like(X[:,0]).reshape(-1, 1)
+    D = SpanData(X=X, y=y, L=L, T=T)
+
+    return D
+
+
 def dataset1():
     # Create pipe locations and time indicies:
     L = jnp.arange(0, 20, 1.)
@@ -57,6 +72,21 @@ def dataset2():
     
     # Create covariates:
     X = vmap(lambda l: jnp.array([t,l]))(L).reshape(-1, 2)
+
+    # Create labels
+    y = jnp.ones_like(X[:,0]).reshape(-1, 1)
+    D = gpx.Dataset(X=X, y=y)
+
+    return D
+
+
+def dataset3():
+    # Create pipe locations and time indicies:
+    L = jnp.arange(10, 30, 1.)
+    T = jnp.arange(2, 4, 1.)
+    
+    # Create covariates:
+    X = vmap(lambda t: vmap(lambda l: jnp.array([t,l]))(L))(T).reshape(-1, 2)
 
     # Create labels
     y = jnp.ones_like(X[:,0]).reshape(-1, 1)
@@ -100,4 +130,20 @@ def test_get_naive_predictor():
 
 
 def test_naive_predictor():
-    pass
+    D = freespans.predict.naive_predictor(Spandataset1(), Spandataset3())
+
+    assert isinstance(D, SpanData)
+    assert (D.X == Spandataset3().X).all()
+    assert (D.y[:10] == Spandataset1().y[:10]).all()
+    assert (D.y[20:30] == Spandataset1().y[:10]).all()
+    assert jnp.isnan(D.y[10:20]).all()
+    assert jnp.isnan(D.y[30:40]).all()
+
+    D = freespans.predict.naive_predictor(dataset1(), dataset3())
+
+    assert isinstance(D, Dataset)
+    assert (D.X == Spandataset3().X).all()
+    assert (D.y[:10] == Spandataset1().y[:10]).all()
+    assert (D.y[20:30] == Spandataset1().y[:10]).all()
+    assert jnp.isnan(D.y[10:20]).all()
+    assert jnp.isnan(D.y[30:40]).all()

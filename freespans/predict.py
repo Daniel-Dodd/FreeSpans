@@ -35,14 +35,13 @@ def get_naive_predictor(train_data: Union[Dataset, SpanData]) -> Union[Dataset, 
 def naive_predictor(train_data: Union[Dataset, SpanData], test_data: Union[Dataset, SpanData]) -> Union[Dataset, SpanData]:
     naive_predictor = get_naive_predictor(train_data)
 
-    L = test_data.L
-    T = test_data.T
-    nt = test_data.nt
-    nl = test_data.nl
 
     x_test = test_data.X
     x_naive = naive_predictor.X
     y_naive = naive_predictor.y
+
+    nt = jnp.unique(x_test[:,0]).shape[0]
+    nl = jnp.unique(x_test[:,1]).shape[0]
 
 
     _, naive_indicies, test_indicies = jnp.intersect1d(x_naive[:,1], x_test[:,1], return_indices=True)
@@ -52,6 +51,8 @@ def naive_predictor(train_data: Union[Dataset, SpanData], test_data: Union[Datas
     vals =  vals.at[:, test_indicies].set(y_naive[naive_indicies][None, :]).reshape(-1, 1)
     
     if isinstance(test_data, SpanData):
+        L = test_data.L
+        T = test_data.T
         return SpanData(X=x_test, y=vals, L=L, T=T)
 
     else:

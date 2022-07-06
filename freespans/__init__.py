@@ -8,4 +8,4 @@ from .aquisitions import PredictiveEntropy, PredictiveInformation
 from .predict import *
 from .plots import *
 
-__version__ = "0.1"
+__version__ = "0.1.1"

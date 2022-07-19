@@ -65,6 +65,14 @@ class ClassifierMetrics:
         """Precision."""
         return self.tp / (self.tp + self.fp)
 
+    def accuracy(self) -> float:
+        """Accuracy."""
+        return jnp.sum(self.true_labels == self.pred_labels) / self.true_labels.shape[0]
+    
+    def f1(self) -> float:
+        """F1 score."""
+        return 2 * self.precision() * self.recall() / (self.precision() + self.recall())
+
 @dataclass(repr=False)
 class RegressorMetrics:
     """Compute regression metrics."""

@@ -232,7 +232,8 @@ def plot_naive_roc(naive_data: Dataset, test_data: Dataset, ax=None):
     naive_pred =  naive_predictor(naive_data, test_data)
     naive_metr = ClassifierMetrics(true_labels = test_data.y, pred_labels = naive_pred.y)
     fpr, tpr = naive_metr.fpr(), naive_metr.tpr()
-    plt.plot(fpr, tpr, "*", markersize=8, label = "Naive")
+
+    ax.plot(fpr, tpr, "*", markersize=8, label = "Naive")
     ax.set_xlabel("False positive rate")
     ax.set_ylabel("True positive rate")
 
@@ -251,7 +252,7 @@ def plot_naive_pr(naive_data: Dataset, test_data: Dataset, ax=None):
     naive_pred =  naive_predictor(naive_data, test_data)
     naive_metr = ClassifierMetrics(true_labels = test_data.y, pred_labels = naive_pred.y)
     precision, recall = naive_metr.precision(), naive_metr.recall()
-    plt.plot(precision, recall, "*", markersize=8, label = "Naive")
+    ax.plot(precision, recall, "*", markersize=8, label = "Naive")
     ax.set_xlabel("Precision")
     ax.set_ylabel("Recall")
 
